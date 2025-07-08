@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Incident - SportsPro Technical Support</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1>SportsPro Technical Support</h1>
+            <p>Sports management software for the sports enthusiast</p>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="container">
+        <div class="main-panel">
+            <div class="header-section">
+                <h2>Assign Incident</h2>
+                <a href="index.html">Home</a>
+            </div>
+            
+            <!-- Unassigned Incidents List -->
+            <div class="incidents-panel mb-4">
+                <h3>Select Incident</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Date Opened</th>
+                                <th>Title</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Sample incident data - students will replace with dynamic data -->
+                            <tr>
+                                <td>1</td>
+                                <td>David Thompson</td>
+                                <td>LEAG10</td>
+                                <td>2023-03-15</td>
+                                <td>Error importing data</td>
+                                <td>
+                                    <button class="btn btn-primary">Select</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Michael Chen</td>
+                                <td>TEAM10</td>
+                                <td>2023-03-20</td>
+                                <td>Report generation failure</td>
+                                <td>
+                                    <button class="btn btn-primary">Select</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Incident Assignment Form (Initially hidden - shown after selecting an incident) -->
+            <div class="assignment-panel">
+                <h3>Assign to Technician</h3>
+                
+                <div class="incident-details mb-4">
+                    <div class="detail-row">
+                        <div class="detail-label">Incident ID:</div>
+                        <div class="detail-value">3</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Customer:</div>
+                        <div class="detail-value">Michael Chen</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Product:</div>
+                        <div class="detail-value">TEAM10 (Team Manager Version 1.0)</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Date Opened:</div>
+                        <div class="detail-value">2023-03-20</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Title:</div>
+                        <div class="detail-value">Report generation failure</div>
+                    </div>
+                    <div class="detail-row full-width">
+                        <div class="detail-label">Description:</div>
+                        <div class="detail-value description-box">
+                            Unable to generate end-of-season statistics report. The application crashes when attempting to run reports.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="technician">Technician:</label>
+                    <select id="technician" name="technician">
+                        <option value="">-- Select a Technician --</option>
+                        <option value="1">John Doe (john.doe@sportspro.com)</option>
+                        <option value="2">Jane Smith (jane.smith@sportspro.com)</option>
+                        <option value="3">Mike Johnson (mike.johnson@sportspro.com)</option>
+                        <!-- Additional technicians to be added by students -->
+                    </select>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary">Assign Incident</button>
+                    <button class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 SportsPro, Inc.</p>
+        </div>
+    </footer>
+</body>
+</html>

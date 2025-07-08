@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Incident - SportsPro Technical Support</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1>SportsPro Technical Support</h1>
+            <p>Sports management software for the sports enthusiast</p>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="container">
+        <div class="main-panel">
+            <div class="header-section">
+                <h2>Create Incident</h2>
+                <a href="index.html">Home</a>
+            </div>
+            
+            <!-- Create Incident Form -->
+            <div class="form-panel">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer">Customer:</label>
+                        <select id="customer" name="customer">
+                            <option value="">-- Select a Customer --</option>
+                            <option value="1">David Thompson (david@example.com)</option>
+                            <option value="2">Sarah Garcia (sarah@example.com)</option>
+                            <option value="3">Michael Chen (michael@example.com)</option>
+                            <!-- Additional customers to be added by students -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="product">Product:</label>
+                        <select id="product" name="product">
+                            <option value="">-- Select a Product --</option>
+                            <option value="DRAFT10">Draft Manager 1.0</option>
+                            <option value="LEAG10">League Scheduler 1.0</option>
+                            <option value="TEAM10">Team Manager Version 1.0</option>
+                            <!-- Additional products to be added by students -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" placeholder="Brief description of the issue">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" rows="4" placeholder="Detailed description of the incident"></textarea>
+                </div>
+                
+                <button class="btn btn-primary">Create Incident</button>
+            </div>
+            
+            <!-- Confirmation Message (Initially hidden - shown after creation) -->
+            <div class="success-panel hidden">
+                <div class="alert alert-success">
+                    <p>Incident was successfully created and assigned incident ID #8.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 SportsPro, Inc.</p>
+        </div>
+    </footer>
+</body>
+</html>
