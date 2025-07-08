@@ -10,14 +10,14 @@ const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
   host: process.env.DB_HOST || 'localhost',
   database: process.env.DB_NAME || 'sportspro',
-  password: process.env.DB_PASSWORD || 'yourpassword',
+  password: process.env.DB_PASSWORD || 'root',
   port: process.env.DB_PORT || 5432,
-  max: 10, // max number of clients in the pool
-  idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
-  connectionTimeoutMillis: 2000, // how long to try connecting before timing out
+  max: 10, 
+  idleTimeoutMillis: 30000, 
+  connectionTimeoutMillis: 2000, 
 });
 
-// Test the connection on startup
+
 pool.query('SELECT NOW()', (err) => {
   if (err) {
     console.error('Database connection failed:', err);
