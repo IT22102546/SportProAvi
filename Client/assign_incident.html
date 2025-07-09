@@ -1,127 +1,317 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Assign Incident - SportsPro Technical Support</title>
-    <link rel="stylesheet" href="css/main.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
     <!-- Header -->
     <header class="header">
-        <div class="container">
-            <h1>SportsPro Technical Support</h1>
-            <p>Sports management software for the sports enthusiast</p>
-        </div>
+      <div class="container">
+        <h1>SportsPro Technical Support</h1>
+        <p>Sports management software for the sports enthusiast</p>
+      </div>
     </header>
-    
+
     <!-- Main Content -->
     <main class="container">
-        <div class="main-panel">
-            <div class="header-section">
-                <h2>Assign Incident</h2>
-                <a href="index.html">Home</a>
-            </div>
-            
-            <!-- Unassigned Incidents List -->
-            <div class="incidents-panel mb-4">
-                <h3>Select Incident</h3>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Customer</th>
-                                <th>Product</th>
-                                <th>Date Opened</th>
-                                <th>Title</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Sample incident data - students will replace with dynamic data -->
-                            <tr>
-                                <td>1</td>
-                                <td>David Thompson</td>
-                                <td>LEAG10</td>
-                                <td>2023-03-15</td>
-                                <td>Error importing data</td>
-                                <td>
-                                    <button class="btn btn-primary">Select</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>Michael Chen</td>
-                                <td>TEAM10</td>
-                                <td>2023-03-20</td>
-                                <td>Report generation failure</td>
-                                <td>
-                                    <button class="btn btn-primary">Select</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Incident Assignment Form (Initially hidden - shown after selecting an incident) -->
-            <div class="assignment-panel">
-                <h3>Assign to Technician</h3>
-                
-                <div class="incident-details mb-4">
-                    <div class="detail-row">
-                        <div class="detail-label">Incident ID:</div>
-                        <div class="detail-value">3</div>
-                    </div>
-                    <div class="detail-row">
-                        <div class="detail-label">Customer:</div>
-                        <div class="detail-value">Michael Chen</div>
-                    </div>
-                    <div class="detail-row">
-                        <div class="detail-label">Product:</div>
-                        <div class="detail-value">TEAM10 (Team Manager Version 1.0)</div>
-                    </div>
-                    <div class="detail-row">
-                        <div class="detail-label">Date Opened:</div>
-                        <div class="detail-value">2023-03-20</div>
-                    </div>
-                    <div class="detail-row">
-                        <div class="detail-label">Title:</div>
-                        <div class="detail-value">Report generation failure</div>
-                    </div>
-                    <div class="detail-row full-width">
-                        <div class="detail-label">Description:</div>
-                        <div class="detail-value description-box">
-                            Unable to generate end-of-season statistics report. The application crashes when attempting to run reports.
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="technician">Technician:</label>
-                    <select id="technician" name="technician">
-                        <option value="">-- Select a Technician --</option>
-                        <option value="1">John Doe (john.doe@sportspro.com)</option>
-                        <option value="2">Jane Smith (jane.smith@sportspro.com)</option>
-                        <option value="3">Mike Johnson (mike.johnson@sportspro.com)</option>
-                        <!-- Additional technicians to be added by students -->
-                    </select>
-                </div>
-                
-                <div class="button-group">
-                    <button class="btn btn-primary">Assign Incident</button>
-                    <button class="btn btn-secondary">Cancel</button>
-                </div>
-            </div>
+      <div class="main-panel">
+        <div class="header-section">
+          <h2>Assign Incident</h2>
+          <a href="index.html">Home</a>
         </div>
+
+        <!-- Unassigned Incidents List -->
+        <div class="incidents-panel mb-4">
+          <h3>Select Incident</h3>
+          <div class="table-container">
+            <table id="incidentsTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Customer</th>
+                  <th>Product</th>
+                  <th>Date Opened</th>
+                  <th>Title</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Incidents will be loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Incident Assignment Form (Initially hidden) -->
+        <div id="assignmentPanel" class="assignment-panel hidden">
+          <h3>Assign to Technician</h3>
+
+          <div class="incident-details mb-4">
+            <div class="detail-row">
+              <div class="detail-label">Incident ID:</div>
+              <div id="incidentId" class="detail-value"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Customer:</div>
+              <div id="customerName" class="detail-value"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Product:</div>
+              <div id="productName" class="detail-value"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Date Opened:</div>
+              <div id="dateOpened" class="detail-value"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Title:</div>
+              <div id="incidentTitle" class="detail-value"></div>
+            </div>
+            <div class="detail-row full-width">
+              <div class="detail-label">Description:</div>
+              <div
+                id="incidentDescription"
+                class="detail-value description-box"
+              ></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="technician">Technician:</label>
+            <select id="technician" name="technician" required>
+              <option value="">-- Select a Technician --</option>
+              <!-- Technicians will be loaded dynamically -->
+            </select>
+          </div>
+
+          <div class="button-group">
+            <button id="assignBtn" class="btn btn-primary">
+              Assign Incident
+            </button>
+            <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Success Message (Initially hidden) -->
+        <div id="successPanel" class="success-panel hidden">
+          <div class="alert alert-success">
+            <p id="successMessage">Incident was successfully assigned.</p>
+          </div>
+        </div>
+      </div>
     </main>
-    
+
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <p>&copy; 2025 SportsPro, Inc.</p>
-        </div>
+      <div class="container">
+        <p>&copy; 2025 SportsPro, Inc.</p>
+      </div>
     </footer>
-</body>
+
+    <script>
+      // DOM Elements
+      const incidentsTable = document
+        .getElementById("incidentsTable")
+        .getElementsByTagName("tbody")[0];
+      const assignmentPanel = document.getElementById("assignmentPanel");
+      const technicianSelect = document.getElementById("technician");
+      const assignBtn = document.getElementById("assignBtn");
+      const cancelBtn = document.getElementById("cancelBtn");
+      const successPanel = document.getElementById("successPanel");
+      const successMessage = document.getElementById("successMessage");
+
+      // Incident details elements
+      const incidentIdEl = document.getElementById("incidentId");
+      const customerNameEl = document.getElementById("customerName");
+      const productNameEl = document.getElementById("productName");
+      const dateOpenedEl = document.getElementById("dateOpened");
+      const incidentTitleEl = document.getElementById("incidentTitle");
+      const incidentDescriptionEl = document.getElementById(
+        "incidentDescription"
+      );
+
+      // API Endpoints
+      const INCIDENTS_API = "http://localhost:3000/api/incident";
+      const TECHNICIANS_API = "http://localhost:3000/api/technicians";
+
+      // Current selected incident
+      let selectedIncident = null;
+
+      // Load data when page loads
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          await Promise.all([loadUnassignedIncidents(), loadTechnicians()]);
+        } catch (error) {
+          console.error("Error loading initial data:", error);
+          alert("Error loading required data. Please try again later.");
+        }
+      });
+
+      // Load unassigned incidents from API
+      async function loadUnassignedIncidents() {
+        try {
+          const response = await fetch(INCIDENTS_API);
+          if (!response.ok) {
+            throw new Error("Failed to fetch incidents");
+          }
+
+          const result = await response.json();
+          console.log(result);
+          const unassignedIncidents = result.data.filter(
+            (incident) => !incident.technicianname
+          );
+          console.log(unassignedIncidents);
+          renderIncidents(unassignedIncidents);
+        } catch (error) {
+          console.error("Error loading incidents:", error);
+          throw error;
+        }
+      }
+
+      // Render incidents in the table
+      function renderIncidents(incidents) {
+        incidentsTable.innerHTML = ""; // Clear existing rows
+
+        if (incidents.length === 0) {
+          const row = incidentsTable.insertRow();
+          const cell = row.insertCell(0);
+          cell.colSpan = 6;
+          cell.textContent = "No unassigned incidents found";
+          cell.style.textAlign = "center";
+          return;
+        }
+
+        incidents.forEach((incident) => {
+          const row = incidentsTable.insertRow();
+
+          row.insertCell(0).textContent = incident.incidentid;
+          row.insertCell(1).textContent = incident.customername;
+          row.insertCell(2).textContent = incident.productname;
+          row.insertCell(3).textContent = new Date(incident.dateopened)
+            .toISOString()
+            .split("T")[0];
+          row.insertCell(4).textContent = incident.title;
+
+          const actionCell = row.insertCell(5);
+          const selectBtn = document.createElement("button");
+          selectBtn.className = "btn btn-primary";
+          selectBtn.textContent = "Select";
+          selectBtn.addEventListener("click", () => selectIncident(incident));
+          actionCell.appendChild(selectBtn);
+        });
+      }
+
+      // Load technicians from API
+      async function loadTechnicians() {
+        try {
+          const response = await fetch(TECHNICIANS_API);
+          if (!response.ok) {
+            throw new Error("Failed to fetch technicians");
+          }
+
+          const result = await response.json();
+          console.log(result);
+          renderTechnicians(result);
+        } catch (error) {
+          console.error("Error loading technicians:", error);
+          throw error;
+        }
+      }
+
+      // Render technicians in dropdown
+      function renderTechnicians(technicians) {
+        technicianSelect.innerHTML =
+          '<option value="">-- Select a Technician --</option>';
+
+        technicians.forEach((tech) => {
+          const option = document.createElement("option");
+          option.value = tech.techid;
+          option.textContent = `${tech.firstname} ${tech.lastname} (${tech.email})`;
+          technicianSelect.appendChild(option);
+        });
+      }
+
+      // Select incident handler
+      function selectIncident(incident) {
+        selectedIncident = incident;
+
+        // Update incident details
+        incidentIdEl.textContent = incident.incidentid;
+        customerNameEl.textContent = incident.customername;
+        productNameEl.textContent = `${incident.productname} (${incident.productcode})`;
+        dateOpenedEl.textContent = new Date(incident.dateopened)
+          .toISOString()
+          .split("T")[0];
+        incidentTitleEl.textContent = incident.title;
+        incidentDescriptionEl.textContent =
+          incident.description || "No description provided";
+
+        // Show assignment panel
+        assignmentPanel.classList.remove("hidden");
+
+        // Scroll to assignment panel
+        assignmentPanel.scrollIntoView({ behavior: "smooth" });
+      }
+
+      // Assign incident handler
+      assignBtn.addEventListener("click", async () => {
+        if (!selectedIncident) return;
+
+        const techID = technicianSelect.value;
+        if (!techID) {
+          alert("Please select a technician");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `${INCIDENTS_API}/${selectedIncident.incidentid}/assign`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ techID }),
+            }
+          );
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.message || "Failed to assign technician");
+          }
+
+          // Show success message
+          successMessage.textContent = `Incident #${selectedIncident.incidentID} successfully assigned to technician.`;
+          successPanel.classList.remove("hidden");
+
+          // Hide assignment panel
+          assignmentPanel.classList.add("hidden");
+
+          // Reset selection
+          selectedIncident = null;
+          technicianSelect.value = "";
+
+          // Reload incidents
+          await loadUnassignedIncidents();
+
+          // Scroll to success message
+          successPanel.scrollIntoView({ behavior: "smooth" });
+        } catch (error) {
+          console.error("Error assigning technician:", error);
+          alert(`Error assigning technician: ${error.message}`);
+        }
+      });
+
+      // Cancel button handler
+      cancelBtn.addEventListener("click", () => {
+        assignmentPanel.classList.add("hidden");
+        selectedIncident = null;
+        technicianSelect.value = "";
+      });
+    </script>
+  </body>
 </html>
