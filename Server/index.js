@@ -6,6 +6,7 @@ import productRoutes from "./routes/product.route.js";
 import technicianRoutes from "./routes/technician.route.js";
 import customerRoutes from "./routes/customer.route.js";
 import registrationRoutes from "./routes/registration.route.js";
+import incidentRoutes from "./routes/incident.route.js";
 import db from "./utils/dbconfig.js";
 
 dotenv.config();
@@ -32,6 +33,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/technicians", technicianRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/registrations", registrationRoutes);
+app.use("/api/incident", incidentRoutes);
 
 
 app.use((err, req, res, next) => {
