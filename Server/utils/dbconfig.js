@@ -50,4 +50,6 @@ process.on("SIGINT", () => {
     });
 });
 
+export const db = pool;
+
 export default pool;

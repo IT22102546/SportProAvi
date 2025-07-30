@@ -6,13 +6,34 @@ import {
   getIncidents,
   updateIncident,
 } from "../controllers/incident.controller.js";
+import { authorizeRoles, verifyToken } from "../utils/verifyUser.js";
 
 const router = express.Router();
 
-router.post("/", createIncident);
-router.put("/:id/assign", assignTechnician);
-router.get("/", getIncidents);
-router.get("/:id", getIncidentById);
-router.put("/:id", updateIncident);
+router.post("/", verifyToken, authorizeRoles("customer"), createIncident);
+router.put(
+  "/:id/assign",
+  verifyToken,
+  authorizeRoles("customer"),
+  assignTechnician
+);
+router.get(
+  "/",
+  verifyToken,
+  authorizeRoles("customer", "technician"),
+  getIncidents
+);
+router.get(
+  "/:id",
+  verifyToken,
+  authorizeRoles("customer", "technician", "admin"),
+  getIncidentById
+);
+router.put(
+  "/:id",
+  verifyToken,
+  authorizeRoles("admin", "technician"),
+  updateIncident
+);
 
 export default router;

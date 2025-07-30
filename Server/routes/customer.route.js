@@ -4,15 +4,26 @@ import {
   searchCustomers,
   getCustomerById,
   updateCustomer,
-  customerLogin
+  customerLogin,
 } from "../controllers/customer.controller.js";
+import { verifyToken, authorizeRoles } from "../utils/verifyUser.js";
 
 const router = express.Router();
 
-router.get("/", getCustomers);
-router.get("/search", searchCustomers);
-router.get("/:id", getCustomerById);
-router.put("/:id", updateCustomer);
-router.post("/login", customerLogin);
+router.get("/", verifyToken, authorizeRoles("admin"), getCustomers);
+router.get("/search", verifyToken, authorizeRoles("admin"), searchCustomers);
+router.get(
+  "/:id",
+  verifyToken,
+  authorizeRoles("admin", "customer"),
+  getCustomerById
+);
+router.put(
+  "/:id",
+  verifyToken,
+  authorizeRoles("admin", "customer"),
+  updateCustomer
+);
+router.post("/login", verifyToken, authorizeRoles("admin"), customerLogin);
 
 export default router;

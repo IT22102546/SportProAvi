@@ -7,11 +7,11 @@ import technicianRoutes from "./routes/technician.route.js";
 import customerRoutes from "./routes/customer.route.js";
 import registrationRoutes from "./routes/registration.route.js";
 import incidentRoutes from "./routes/incident.route.js";
+import authRoutes from "./routes/auth.route.js";
 import db from "./utils/dbconfig.js";
 
 dotenv.config();
 const app = express();
-
 
 app.use(cookieParser());
 app.use(express.json());
@@ -22,27 +22,25 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-
 app.use((req, res, next) => {
   req.db = db;
   next();
 });
-
 
 app.use("/api/products", productRoutes);
 app.use("/api/technicians", technicianRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/registrations", registrationRoutes);
 app.use("/api/incident", incidentRoutes);
-
+app.use("/api/auth", authRoutes);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+  const message = err.message || "Internal Server Error";
   return res.status(statusCode).json({
     success: false,
     message,
-    statusCode
+    statusCode,
   });
 });
 
