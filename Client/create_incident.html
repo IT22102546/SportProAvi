@@ -89,21 +89,38 @@
     </footer>
 
     <script>
-      // DOM Elements
       const incidentForm = document.getElementById("incidentForm");
       const customerSelect = document.getElementById("customer");
       const productSelect = document.getElementById("product");
       const successPanel = document.getElementById("successPanel");
       const successMessage = document.getElementById("successMessage");
 
-      // API Endpoints
       const INCIDENTS_API = "http://localhost:8000/api/incident";
       const CUSTOMERS_API = "http://localhost:8000/api/customers";
       const PRODUCTS_API = "http://localhost:8000/api/products";
 
-      // Load data when page loads
+      const token = localStorage.getItem("token");
+      const userRole = localStorage.getItem("userRole");
+      const userId = localStorage.getItem("userId");
+
+      if (!token) {
+        alert("You are not authenticated. Please login first.");
+        window.location.href = "login.html";
+      }
+
+      const authHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
       document.addEventListener("DOMContentLoaded", async () => {
         try {
+          if (userRole !== "customer") {
+            alert("Only customers can create incidents");
+            window.location.href = "index.html";
+            return;
+          }
+
           await Promise.all([loadCustomers(), loadProducts()]);
         } catch (error) {
           console.error("Error loading initial data:", error);
@@ -111,17 +128,34 @@
         }
       });
 
-      // Load customers from API
+      function handleUnauthorized() {
+        alert("Your session has expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+      }
+
       async function loadCustomers() {
         try {
-          const response = await fetch(CUSTOMERS_API);
+          const response = await fetch(CUSTOMERS_API, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!response.ok) {
-            throw new Error("Failed to fetch customers");
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch customers");
           }
 
           const customersData = await response.json();
           const customers = customersData.data;
-          console.log(customers);
           renderCustomers(customers);
         } catch (error) {
           console.error("Error loading customers:", error);
@@ -129,29 +163,49 @@
         }
       }
 
-      // Render customers in dropdown
       function renderCustomers(customers) {
         customerSelect.innerHTML =
           '<option value="">-- Select a Customer --</option>';
 
-        customers.forEach((customer) => {
-          const option = document.createElement("option");
-          option.value = customer.customerid;
-          option.textContent = `${customer.firstname} ${customer.lastname} (${customer.email})`;
-          customerSelect.appendChild(option);
-        });
+        if (userRole === "customer") {
+          const currentCustomer = customers.find((c) => c.customerid == userId);
+          if (currentCustomer) {
+            const option = document.createElement("option");
+            option.value = currentCustomer.customerid;
+            option.textContent = `${currentCustomer.firstname} ${currentCustomer.lastname} (${currentCustomer.email})`;
+            option.selected = true;
+            customerSelect.appendChild(option);
+            customerSelect.disabled = true;
+          }
+        } else {
+          customers.forEach((customer) => {
+            const option = document.createElement("option");
+            option.value = customer.customerid;
+            option.textContent = `${customer.firstname} ${customer.lastname} (${customer.email})`;
+            customerSelect.appendChild(option);
+          });
+        }
       }
 
-      // Load products from API
       async function loadProducts() {
         try {
-          const response = await fetch(PRODUCTS_API);
+          const response = await fetch(PRODUCTS_API, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!response.ok) {
-            throw new Error("Failed to fetch products");
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch products");
           }
 
           const products = await response.json();
-          console.log(products);
           renderProducts(products);
         } catch (error) {
           console.error("Error loading products:", error);
@@ -159,7 +213,6 @@
         }
       }
 
-      // Render products in dropdown
       function renderProducts(products) {
         productSelect.innerHTML =
           '<option value="">-- Select a Product --</option>';
@@ -172,9 +225,13 @@
         });
       }
 
-      // Form submission handler
       incidentForm.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        if (userRole !== "customer") {
+          alert("Only customers can create incidents");
+          return;
+        }
 
         const formData = {
           customerID: incidentForm.customerid.value,
@@ -183,14 +240,27 @@
           description: incidentForm.description.value.trim(),
         };
 
+        if (
+          !formData.customerID ||
+          !formData.productCode ||
+          !formData.title ||
+          !formData.description
+        ) {
+          alert("Please fill in all required fields");
+          return;
+        }
+
         try {
           const response = await fetch(INCIDENTS_API, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: authHeaders,
             body: JSON.stringify(formData),
           });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
 
           const result = await response.json();
 
@@ -198,14 +268,13 @@
             throw new Error(result.message || "Failed to create incident");
           }
 
-          // Show success message
           successMessage.textContent = `Incident was successfully created with ID #${result.incidentID}.`;
           successPanel.classList.remove("hidden");
 
-          // Reset form
-          incidentForm.reset();
+          incidentForm.title.value = "";
+          incidentForm.description.value = "";
+          productSelect.value = "";
 
-          // Scroll to success message
           successPanel.scrollIntoView({ behavior: "smooth" });
         } catch (error) {
           console.error("Error creating incident:", error);

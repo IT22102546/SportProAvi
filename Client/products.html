@@ -85,19 +85,26 @@
     </footer>
 
     <script>
-      // DOM Elements
       const productsTable = document
         .getElementById("productsTable")
         .getElementsByTagName("tbody")[0];
       const addProductForm = document.getElementById("addProductForm");
 
-      // Base API URL
       const API_BASE_URL = "http://localhost:8000/api/products";
 
-      // Load products when page loads
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You are not authenticated. Please login first.");
+        window.location.href = "login.html";
+      }
+
+      const authHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
       document.addEventListener("DOMContentLoaded", loadProducts);
 
-      // Form submission handler
       addProductForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -111,48 +118,58 @@
         try {
           const response = await fetch(API_BASE_URL, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: authHeaders,
             body: JSON.stringify(formData),
           });
 
-          if (!response.ok) {
-            throw new Error("Failed to add product");
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
           }
 
-          // Clear form and refresh table
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to add product");
+          }
+
           addProductForm.reset();
           loadProducts();
 
           alert("Product added successfully!");
         } catch (error) {
           console.error("Error adding product:", error);
-          alert("Error adding product. Please try again.");
+          alert(error.message || "Error adding product. Please try again.");
         }
       });
 
-      // Load products from API
       async function loadProducts() {
         try {
-          const response = await fetch(API_BASE_URL);
+          const response = await fetch(API_BASE_URL, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
 
           if (!response.ok) {
-            throw new Error("Failed to fetch products");
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch products");
           }
 
           const products = await response.json();
-          console.log(products);
           renderProducts(products);
         } catch (error) {
           console.error("Error loading products:", error);
-          alert("Error loading products. Please try again.");
+          alert(error.message || "Error loading products. Please try again.");
         }
       }
 
-      // Render products in the table
       function renderProducts(products) {
-        productsTable.innerHTML = ""; // Clear existing rows
+        productsTable.innerHTML = "";
 
         if (products.length === 0) {
           const row = productsTable.insertRow();
@@ -170,7 +187,6 @@
           row.insertCell(1).textContent = product.name;
           row.insertCell(2).textContent = product.version;
 
-          // Fixed date handling
           const dateCell = row.insertCell(3);
           dateCell.textContent = product.releasedate
             ? product.releasedate.split("T")[0]
@@ -187,7 +203,6 @@
         });
       }
 
-      // Confirm and delete product
       async function confirmDelete(productCode) {
         if (
           confirm(`Are you sure you want to delete product ${productCode}?`)
@@ -195,20 +210,34 @@
           try {
             const response = await fetch(`${API_BASE_URL}/${productCode}`, {
               method: "DELETE",
+              headers: authHeaders,
             });
 
-            if (!response.ok) {
-              throw new Error("Failed to delete product");
+            if (response.status === 401) {
+              handleUnauthorized();
+              return;
             }
 
-            // Refresh the table
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || "Failed to delete product");
+            }
+
             loadProducts();
             alert("Product deleted successfully!");
           } catch (error) {
             console.error("Error deleting product:", error);
-            alert("Error deleting product. Please try again.");
+            alert(error.message || "Error deleting product. Please try again.");
           }
         }
+      }
+
+      function handleUnauthorized() {
+        alert("Your session has expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
       }
     </script>
   </body>
