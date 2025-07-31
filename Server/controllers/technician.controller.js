@@ -32,6 +32,7 @@ export const getTechnicianById = async (req, res, next) => {
 export const createTechnician = async (req, res, next) => {
   try {
     const { firstName, lastName, email, phone, password } = req.body;
+    console.log(firstName, lastName, email, phone, password)
     
     // Basic validation
     if (!firstName || !lastName || !email || !phone) {

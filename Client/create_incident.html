@@ -1,81 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create Incident - SportsPro Technical Support</title>
-    <link rel="stylesheet" href="css/main.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
     <!-- Header -->
     <header class="header">
-        <div class="container">
-            <h1>SportsPro Technical Support</h1>
-            <p>Sports management software for the sports enthusiast</p>
-        </div>
+      <div class="container">
+        <h1>SportsPro Technical Support</h1>
+        <p>Sports management software for the sports enthusiast</p>
+      </div>
     </header>
-    
+
     <!-- Main Content -->
     <main class="container">
-        <div class="main-panel">
-            <div class="header-section">
-                <h2>Create Incident</h2>
-                <a href="index.html">Home</a>
-            </div>
-            
-            <!-- Create Incident Form -->
-            <div class="form-panel">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="customer">Customer:</label>
-                        <select id="customer" name="customer">
-                            <option value="">-- Select a Customer --</option>
-                            <option value="1">David Thompson (david@example.com)</option>
-                            <option value="2">Sarah Garcia (sarah@example.com)</option>
-                            <option value="3">Michael Chen (michael@example.com)</option>
-                            <!-- Additional customers to be added by students -->
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="product">Product:</label>
-                        <select id="product" name="product">
-                            <option value="">-- Select a Product --</option>
-                            <option value="DRAFT10">Draft Manager 1.0</option>
-                            <option value="LEAG10">League Scheduler 1.0</option>
-                            <option value="TEAM10">Team Manager Version 1.0</option>
-                            <!-- Additional products to be added by students -->
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="title">Title:</label>
-                    <input type="text" id="title" name="title" placeholder="Brief description of the issue">
-                </div>
-                
-                <div class="form-group">
-                    <label for="description">Description:</label>
-                    <textarea id="description" name="description" rows="4" placeholder="Detailed description of the incident"></textarea>
-                </div>
-                
-                <button class="btn btn-primary">Create Incident</button>
-            </div>
-            
-            <!-- Confirmation Message (Initially hidden - shown after creation) -->
-            <div class="success-panel hidden">
-                <div class="alert alert-success">
-                    <p>Incident was successfully created and assigned incident ID #8.</p>
-                </div>
-            </div>
+      <div class="main-panel">
+        <div class="header-section">
+          <h2>Create Incident</h2>
+          <a href="index.html">Home</a>
         </div>
+
+        <!-- Create Incident Form -->
+        <div class="form-panel">
+          <form id="incidentForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="customer">Customer:</label>
+                <select id="customer" name="customerid" required>
+                  <option value="">-- Select a Customer --</option>
+                  <!-- Customers will be loaded dynamically -->
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="product">Product:</label>
+                <select id="product" name="productcode" required>
+                  <option value="">-- Select a Product --</option>
+                  <!-- Products will be loaded dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="title">Title:</label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                placeholder="Brief description of the issue"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description:</label>
+              <textarea
+                id="description"
+                name="description"
+                rows="4"
+                placeholder="Detailed description of the incident"
+                required
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Create Incident
+            </button>
+          </form>
+        </div>
+
+        <!-- Confirmation Message (Initially hidden) -->
+        <div id="successPanel" class="success-panel hidden">
+          <div class="alert alert-success">
+            <p id="successMessage">Incident was successfully created.</p>
+          </div>
+        </div>
+      </div>
     </main>
-    
+
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <p>&copy; 2025 SportsPro, Inc.</p>
-        </div>
+      <div class="container">
+        <p>&copy; 2025 SportsPro, Inc.</p>
+      </div>
     </footer>
-</body>
+
+    <script>
+      // DOM Elements
+      const incidentForm = document.getElementById("incidentForm");
+      const customerSelect = document.getElementById("customer");
+      const productSelect = document.getElementById("product");
+      const successPanel = document.getElementById("successPanel");
+      const successMessage = document.getElementById("successMessage");
+
+      // API Endpoints
+      const INCIDENTS_API = "http://localhost:8000/api/incident";
+      const CUSTOMERS_API = "http://localhost:8000/api/customers";
+      const PRODUCTS_API = "http://localhost:8000/api/products";
+
+      // Load data when page loads
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          await Promise.all([loadCustomers(), loadProducts()]);
+        } catch (error) {
+          console.error("Error loading initial data:", error);
+          alert("Error loading required data. Please try again later.");
+        }
+      });
+
+      // Load customers from API
+      async function loadCustomers() {
+        try {
+          const response = await fetch(CUSTOMERS_API);
+          if (!response.ok) {
+            throw new Error("Failed to fetch customers");
+          }
+
+          const customersData = await response.json();
+          const customers = customersData.data;
+          console.log(customers);
+          renderCustomers(customers);
+        } catch (error) {
+          console.error("Error loading customers:", error);
+          throw error;
+        }
+      }
+
+      // Render customers in dropdown
+      function renderCustomers(customers) {
+        customerSelect.innerHTML =
+          '<option value="">-- Select a Customer --</option>';
+
+        customers.forEach((customer) => {
+          const option = document.createElement("option");
+          option.value = customer.customerid;
+          option.textContent = `${customer.firstname} ${customer.lastname} (${customer.email})`;
+          customerSelect.appendChild(option);
+        });
+      }
+
+      // Load products from API
+      async function loadProducts() {
+        try {
+          const response = await fetch(PRODUCTS_API);
+          if (!response.ok) {
+            throw new Error("Failed to fetch products");
+          }
+
+          const products = await response.json();
+          console.log(products);
+          renderProducts(products);
+        } catch (error) {
+          console.error("Error loading products:", error);
+          throw error;
+        }
+      }
+
+      // Render products in dropdown
+      function renderProducts(products) {
+        productSelect.innerHTML =
+          '<option value="">-- Select a Product --</option>';
+
+        products.forEach((product) => {
+          const option = document.createElement("option");
+          option.value = product.productcode;
+          option.textContent = `${product.name} (${product.productcode})`;
+          productSelect.appendChild(option);
+        });
+      }
+
+      // Form submission handler
+      incidentForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = {
+          customerID: incidentForm.customerid.value,
+          productCode: incidentForm.productcode.value,
+          title: incidentForm.title.value.trim(),
+          description: incidentForm.description.value.trim(),
+        };
+
+        try {
+          const response = await fetch(INCIDENTS_API, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.message || "Failed to create incident");
+          }
+
+          // Show success message
+          successMessage.textContent = `Incident was successfully created with ID #${result.incidentID}.`;
+          successPanel.classList.remove("hidden");
+
+          // Reset form
+          incidentForm.reset();
+
+          // Scroll to success message
+          successPanel.scrollIntoView({ behavior: "smooth" });
+        } catch (error) {
+          console.error("Error creating incident:", error);
+          alert(`Error creating incident: ${error.message}`);
+        }
+      });
+    </script>
+  </body>
 </html>

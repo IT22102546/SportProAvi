@@ -1,146 +1,400 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manage Customers - SportsPro Technical Support</title>
-    <link rel="stylesheet" href="css/main.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/main.css" />
+    <style>
+      .hidden {
+        display: none;
+      }
+      .error-message {
+        color: red;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
     <!-- Header -->
     <header class="header">
-        <div class="container">
-            <h1>SportsPro Technical Support</h1>
-            <p>Sports management software for the sports enthusiast</p>
-        </div>
+      <div class="container">
+        <h1>SportsPro Technical Support</h1>
+        <p>Sports management software for the sports enthusiast</p>
+      </div>
     </header>
-    
+
     <!-- Main Content -->
     <main class="container">
-        <div class="main-panel">
-            <div class="header-section">
-                <h2>Customer Search</h2>
-                <a href="index.html">Home</a>
-            </div>
-            
-            <!-- Search Form -->
-            <div class="search-panel mb-4">
-                <div class="form-group">
-                    <label for="lastName">Last Name:</label>
-                    <div class="search-row">
-                        <input type="text" id="lastName" name="lastName" placeholder="Enter last name">
-                        <button class="btn btn-primary">Search</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Search Results -->
-            <div class="results-panel mb-4">
-                <h3>Results</h3>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Sample customer data - students will replace with dynamic data -->
-                            <tr>
-                                <td>David Thompson</td>
-                                <td>david@example.com</td>
-                                <td>212-555-1212</td>
-                                <td>
-                                    <button class="btn btn-primary">View/Edit</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Customer Edit Form (Initially hidden - would be shown when View/Edit is clicked) -->
-            <div class="form-panel">
-                <h3>View/Update Customer</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="firstName">First Name:</label>
-                        <input type="text" id="firstName" name="firstName" value="David">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="editLastName">Last Name:</label>
-                        <input type="text" id="editLastName" name="editLastName" value="Thompson">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="address">Address:</label>
-                    <input type="text" id="address" name="address" value="123 Main St">
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="city">City:</label>
-                        <input type="text" id="city" name="city" value="New York">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="state">State:</label>
-                        <input type="text" id="state" name="state" value="NY">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="postalCode">Postal Code:</label>
-                        <input type="text" id="postalCode" name="postalCode" value="10001">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="country">Country:</label>
-                        <select id="country" name="country">
-                            <option value="US" selected>United States</option>
-                            <option value="CA">Canada</option>
-                            <option value="MX">Mexico</option>
-                            <!-- Additional countries to be added by students -->
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="phone">Phone:</label>
-                        <input type="tel" id="phone" name="phone" value="212-555-1212">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" name="email" value="david@example.com">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" name="password" value="********">
-                    </div>
-                </div>
-                
-                <div class="button-group">
-                    <button class="btn btn-primary">Update Customer</button>
-                    <button class="btn btn-secondary">Cancel</button>
-                </div>
-            </div>
+      <div class="main-panel">
+        <div class="header-section">
+          <h2>Customer Search</h2>
+          <a href="index.html">Home</a>
         </div>
+
+        <!-- Search Form -->
+        <div class="search-panel mb-4">
+          <div class="form-group">
+            <label for="lastName">Last Name:</label>
+            <div class="search-row">
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                placeholder="Enter last name"
+              />
+              <button id="searchBtn" class="btn btn-primary">Search</button>
+            </div>
+            <div id="searchError" class="error-message"></div>
+          </div>
+        </div>
+
+        <!-- Search Results -->
+        <div id="resultsPanel" class="results-panel mb-4">
+          <h3>Results</h3>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="resultsTableBody">
+                <!-- Results will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Customer Edit Form (Initially hidden) -->
+        <div id="editFormPanel" class="form-panel hidden">
+          <h3>View/Update Customer</h3>
+          <div id="formError" class="error-message"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name:</label>
+              <input type="text" id="firstName" name="firstName" />
+            </div>
+
+            <div class="form-group">
+              <label for="editLastName">Last Name:</label>
+              <input type="text" id="editLastName" name="editLastName" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="city">City:</label>
+              <input type="text" id="city" name="city" />
+            </div>
+
+            <div class="form-group">
+              <label for="state">State:</label>
+              <input type="text" id="state" name="state" />
+            </div>
+
+            <div class="form-group">
+              <label for="postalCode">Postal Code:</label>
+              <input type="text" id="postalCode" name="postalCode" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="country">Country:</label>
+              <select id="country" name="country">
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="MX">Mexico</option>
+                <!-- Additional countries will be populated -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Phone:</label>
+              <input type="tel" id="phone" name="phone" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" id="email" name="email" />
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password:</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Leave blank to keep current"
+              />
+            </div>
+          </div>
+
+          <input type="hidden" id="customerId" />
+
+          <div class="button-group">
+            <button id="updateBtn" class="btn btn-primary">
+              Update Customer
+            </button>
+            <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
     </main>
-    
+
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <p>&copy; 2025 SportsPro, Inc.</p>
-        </div>
+      <div class="container">
+        <p>&copy; 2025 SportsPro, Inc.</p>
+      </div>
     </footer>
-</body>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // DOM elements
+        const searchBtn = document.getElementById("searchBtn");
+        const lastNameInput = document.getElementById("lastName");
+        const resultsTableBody = document.getElementById("resultsTableBody");
+        const editFormPanel = document.getElementById("editFormPanel");
+        const searchError = document.getElementById("searchError");
+        const formError = document.getElementById("formError");
+        const updateBtn = document.getElementById("updateBtn");
+        const cancelBtn = document.getElementById("cancelBtn");
+
+        // Form fields
+        const customerIdField = document.getElementById("customerId");
+        const firstNameField = document.getElementById("firstName");
+        const lastNameField = document.getElementById("editLastName");
+        const addressField = document.getElementById("address");
+        const cityField = document.getElementById("city");
+        const stateField = document.getElementById("state");
+        const postalCodeField = document.getElementById("postalCode");
+        const countryField = document.getElementById("country");
+        const phoneField = document.getElementById("phone");
+        const emailField = document.getElementById("email");
+        const passwordField = document.getElementById("password");
+
+        // Store all customers
+        let allCustomers = [];
+        let displayedCustomers = [];
+
+        // Event listeners
+        searchBtn.addEventListener("click", filterCustomers);
+        updateBtn.addEventListener("click", updateCustomer);
+        cancelBtn.addEventListener("click", cancelEdit);
+
+        // Load data when page loads
+        loadAllCustomers();
+        loadCountries();
+
+        // Function to load all customers
+        async function loadAllCustomers() {
+          try {
+            const response = await fetch("http://localhost:8000/api/customers");
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.message || "Failed to load customers");
+            }
+
+            allCustomers = data.data;
+            displayedCustomers = [...allCustomers];
+            displayResults(displayedCustomers);
+          } catch (error) {
+            searchError.textContent = error.message;
+            console.error("Load error:", error);
+          }
+        }
+
+        // Function to filter customers by last name
+        function filterCustomers() {
+          const searchTerm = lastNameInput.value.trim().toLowerCase();
+
+          if (!searchTerm) {
+            // If search is empty, show all customers
+            displayedCustomers = [...allCustomers];
+          } else {
+            // Filter customers whose lastname contains the search term
+            displayedCustomers = allCustomers.filter((customer) =>
+              customer.lastname.toLowerCase().includes(searchTerm)
+            );
+          }
+
+          displayResults(displayedCustomers);
+        }
+
+        // Function to display results
+        function displayResults(customers) {
+          resultsTableBody.innerHTML = "";
+
+          if (customers.length === 0) {
+            resultsTableBody.innerHTML =
+              '<tr><td colspan="4">No customers found</td></tr>';
+            return;
+          }
+
+          customers.forEach((customer) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                        <td>${customer.firstname} ${customer.lastname}</td>
+                        <td>${customer.email}</td>
+                        <td>${customer.phone || "N/A"}</td>
+                        <td>
+                            <button class="btn btn-primary view-edit-btn" data-id="${
+                              customer.customerid
+                            }">View/Edit</button>
+                        </td>
+                    `;
+            resultsTableBody.appendChild(row);
+          });
+
+          // Add event listeners to the new buttons
+          document.querySelectorAll(".view-edit-btn").forEach((btn) => {
+            btn.addEventListener("click", function () {
+              loadCustomerForEdit(this.dataset.id);
+            });
+          });
+        }
+
+        // Function to load customer data for editing
+        async function loadCustomerForEdit(customerId) {
+          try {
+            const response = await fetch(
+              `http://localhost:8000/api/customers/${customerId}`
+            );
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.message || "Failed to load customer");
+            }
+
+            const customer = data.data;
+
+            // Populate form fields (using lowercase attribute names)
+            customerIdField.value = customer.customerid;
+            firstNameField.value = customer.firstname;
+            lastNameField.value = customer.lastname;
+            addressField.value = customer.address || "";
+            cityField.value = customer.city || "";
+            stateField.value = customer.state || "";
+            postalCodeField.value = customer.postalcode || "";
+            countryField.value = customer.countrycode || "US";
+            phoneField.value = customer.phone || "";
+            emailField.value = customer.email;
+            passwordField.value = "";
+
+            // Show the edit form
+            editFormPanel.classList.remove("hidden");
+            formError.textContent = "";
+
+            // Scroll to the form
+            editFormPanel.scrollIntoView({ behavior: "smooth" });
+          } catch (error) {
+            formError.textContent = error.message;
+            console.error("Error loading customer:", error);
+          }
+        }
+
+        // Function to update customer
+        async function updateCustomer() {
+          const customerId = customerIdField.value;
+          const password = passwordField.value.trim();
+
+          const customerData = {
+            firstname: firstNameField.value.trim(),
+            lastname: lastNameField.value.trim(),
+            address: addressField.value.trim(),
+            city: cityField.value.trim(),
+            state: stateField.value.trim(),
+            postalcode: postalCodeField.value.trim(),
+            countrycode: countryField.value,
+            phone: phoneField.value.trim(),
+            email: emailField.value.trim(),
+            password: password ? password : undefined,
+          };
+
+          // Basic validation
+          if (
+            !customerData.firstname ||
+            !customerData.lastname ||
+            !customerData.email
+          ) {
+            formError.textContent =
+              "First name, last name, and email are required";
+            return;
+          }
+
+          formError.textContent = "";
+
+          try {
+            const response = await fetch(
+              `http://localhost:8000/api/customers/${customerId}`,
+              {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(customerData),
+              }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.message || "Failed to update customer");
+            }
+
+            // Show success and refresh the data
+            alert("Customer updated successfully!");
+            cancelEdit();
+            loadAllCustomers(); // Refresh the customer list
+          } catch (error) {
+            formError.textContent = error.message;
+            console.error("Update error:", error);
+          }
+        }
+
+        // Function to cancel editing
+        function cancelEdit() {
+          editFormPanel.classList.add("hidden");
+          formError.textContent = "";
+        }
+
+        // Function to load countries into the select dropdown
+        async function loadCountries() {
+          try {
+            // In a real app, you would fetch this from your API
+            // For now, we'll just add a few more countries to the existing ones
+            const additionalCountries = [
+              { code: "GB", name: "United Kingdom" },
+              { code: "AU", name: "Australia" },
+              { code: "DE", name: "Germany" },
+              { code: "FR", name: "France" },
+              { code: "JP", name: "Japan" },
+            ];
+
+            additionalCountries.forEach((country) => {
+              const option = document.createElement("option");
+              option.value = country.code;
+              option.textContent = country.name;
+              countryField.appendChild(option);
+            });
+          } catch (error) {
+            console.error("Error loading countries:", error);
+          }
+        }
+      });
+    </script>
+  </body>
 </html>

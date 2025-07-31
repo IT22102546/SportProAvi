@@ -1,102 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manage Technicians - SportsPro Technical Support</title>
-    <link rel="stylesheet" href="css/main.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
     <!-- Header -->
     <header class="header">
-        <div class="container">
-            <h1>SportsPro Technical Support</h1>
-            <p>Sports management software for the sports enthusiast</p>
-        </div>
+      <div class="container">
+        <h1>SportsPro Technical Support</h1>
+        <p>Sports management software for the sports enthusiast</p>
+      </div>
     </header>
-    
+
     <!-- Main Content -->
     <main class="container">
-        <div class="main-panel">
-            <div class="header-section">
-                <h2>Technician List</h2>
-                <a href="index.html">Home</a>
-            </div>
-            
-            <!-- Technicians Table -->
-            <div class="table-container mb-4">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Sample technician data - students will replace with dynamic data -->
-                        <tr>
-                            <td>John</td>
-                            <td>Doe</td>
-                            <td>john.doe@sportspro.com</td>
-                            <td>800-555-0443</td>
-                            <td>
-                                <button class="btn btn-danger">Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Jane</td>
-                            <td>Smith</td>
-                            <td>jane.smith@sportspro.com</td>
-                            <td>800-555-0459</td>
-                            <td>
-                                <button class="btn btn-danger">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Add Technician Form -->
-            <div class="form-panel">
-                <h3>Add Technician</h3>
-                <div class="form-group">
-                    <label for="firstName">First Name:</label>
-                    <input type="text" id="firstName" name="firstName">
-                </div>
-                
-                <div class="form-group">
-                    <label for="lastName">Last Name:</label>
-                    <input type="text" id="lastName" name="lastName">
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email">
-                </div>
-                
-                <div class="form-group">
-                    <label for="phone">Phone:</label>
-                    <input type="tel" id="phone" name="phone">
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password">
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Add Technician</button>
-            </div>
+      <div class="main-panel">
+        <div class="header-section">
+          <h2>Technician List</h2>
+          <a href="index.html">Home</a>
         </div>
+
+        <!-- Search Box -->
+        <!-- <div class="search-box mb-2">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search technicians..."
+          />
+          <button id="searchBtn" class="btn btn-secondary">Search</button>
+          <button id="clearSearchBtn" class="btn btn-outline">Clear</button>
+        </div> -->
+
+        <!-- Technicians Table -->
+        <div class="table-container mb-4">
+          <table id="techniciansTable">
+            <thead>
+              <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Technicians will be loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add Technician Form -->
+        <div class="form-panel">
+          <h3>Add Technician</h3>
+          <form id="addTechnicianForm">
+            <div class="form-group">
+              <label for="firstName">First Name:</label>
+              <input type="text" id="firstName" name="firstName" required />
+            </div>
+
+            <div class="form-group">
+              <label for="lastName">Last Name:</label>
+              <input type="text" id="lastName" name="lastName" required />
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Phone:</label>
+              <input type="tel" id="phone" name="phone" required />
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password:</label>
+              <input type="password" id="password" name="password" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Add Technician
+            </button>
+          </form>
+        </div>
+      </div>
     </main>
-    
+
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <p>&copy; 2025 SportsPro, Inc.</p>
-        </div>
+      <div class="container">
+        <p>&copy; 2025 SportsPro, Inc.</p>
+      </div>
     </footer>
-</body>
+
+    <script>
+      // DOM Elements
+      const techniciansTable = document
+        .getElementById("techniciansTable")
+        .getElementsByTagName("tbody")[0];
+      const addTechnicianForm = document.getElementById("addTechnicianForm");
+      const searchInput = document.getElementById("searchInput");
+      const searchBtn = document.getElementById("searchBtn");
+      const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+      // Base API URL
+      const API_BASE_URL = "http://localhost:8000/api/technicians";
+
+      // Load technicians when page loads
+      document.addEventListener("DOMContentLoaded", loadTechnicians);
+
+      // Form submission handler
+      addTechnicianForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = {
+          firstName: addTechnicianForm.firstName.value.trim(),
+          lastName: addTechnicianForm.lastName.value.trim(),
+          email: addTechnicianForm.email.value.trim(),
+          phone: addTechnicianForm.phone.value.trim(),
+          password: addTechnicianForm.password.value,
+        };
+
+        try {
+          const response = await fetch(API_BASE_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.message || "Failed to add technician");
+          }
+
+          // Clear form and refresh table
+          addTechnicianForm.reset();
+          loadTechnicians();
+
+          alert("Technician added successfully!");
+        } catch (error) {
+          console.error("Error adding technician:", error);
+          alert(`Error adding technician: ${error.message}`);
+        }
+      });
+
+      // Search handler
+      searchBtn.addEventListener("click", () => {
+        const query = searchInput.value.trim();
+        if (query.length >= 2) {
+          searchTechnicians(query);
+        } else {
+          alert("Please enter at least 2 characters to search");
+        }
+      });
+
+      // Clear search handler
+      clearSearchBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        loadTechnicians();
+      });
+
+      // Load technicians from API
+      async function loadTechnicians() {
+        try {
+          const response = await fetch(API_BASE_URL);
+          if (!response.ok) {
+            throw new Error("Failed to fetch technicians");
+          }
+
+          const result = await response.json();
+          console.log(result);
+          renderTechnicians(result);
+        } catch (error) {
+          console.error("Error loading technicians:", error);
+          alert("Error loading technicians. Please try again.");
+        }
+      }
+
+      // Search technicians
+      async function searchTechnicians(query) {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/search?query=${encodeURIComponent(query)}`
+          );
+          if (!response.ok) {
+            throw new Error("Failed to search technicians");
+          }
+
+          const result = await response.json();
+          if (result.success) {
+            renderTechnicians(result.data);
+          } else {
+            throw new Error(result.message);
+          }
+        } catch (error) {
+          console.error("Error searching technicians:", error);
+          alert(`Error searching technicians: ${error.message}`);
+        }
+      }
+
+      // Render technicians in the table
+      function renderTechnicians(technicians) {
+        techniciansTable.innerHTML = ""; // Clear existing rows
+
+        if (technicians.length === 0) {
+          const row = techniciansTable.insertRow();
+          const cell = row.insertCell(0);
+          cell.colSpan = 5;
+          cell.textContent = "No technicians found";
+          cell.style.textAlign = "center";
+          return;
+        }
+
+        technicians.forEach((tech) => {
+          const row = techniciansTable.insertRow();
+
+          row.insertCell(0).textContent = tech.firstname;
+          row.insertCell(1).textContent = tech.lastname;
+          row.insertCell(2).textContent = tech.email;
+          row.insertCell(3).textContent = tech.phone;
+
+          const actionCell = row.insertCell(4);
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "btn btn-danger";
+          deleteBtn.textContent = "Delete";
+          deleteBtn.addEventListener("click", () => confirmDelete(tech.techid));
+          actionCell.appendChild(deleteBtn);
+        });
+      }
+
+      // Confirm and delete technician
+      async function confirmDelete(techID) {
+        if (confirm("Are you sure you want to delete this technician?")) {
+          try {
+            const response = await fetch(`${API_BASE_URL}/${techID}`, {
+              method: "DELETE",
+            });
+
+            if (response.status === 204) {
+              // Refresh the table
+              loadTechnicians();
+              alert("Technician deleted successfully!");
+            } else if (response.status === 400) {
+              const result = await response.json();
+              throw new Error(result.message);
+            } else if (response.status === 404) {
+              throw new Error("Technician not found");
+            } else {
+              throw new Error("Failed to delete technician");
+            }
+          } catch (error) {
+            console.error("Error deleting technician:", error);
+            alert(`Error deleting technician: ${error.message}`);
+          }
+        }
+      }
+    </script>
+  </body>
 </html>

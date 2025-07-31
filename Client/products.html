@@ -1,97 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manage Products - SportsPro Technical Support</title>
-    <link rel="stylesheet" href="css/main.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
     <!-- Header -->
     <header class="header">
-        <div class="container">
-            <h1>SportsPro Technical Support</h1>
-            <p>Sports management software for the sports enthusiast</p>
-        </div>
+      <div class="container">
+        <h1>SportsPro Technical Support</h1>
+        <p>Sports management software for the sports enthusiast</p>
+      </div>
     </header>
-    
+
     <!-- Main Content -->
     <main class="container">
-        <div class="main-panel">
-            <div class="header-section">
-                <h2>Product List</h2>
-                <a href="index.html">Home</a>
-            </div>
-            
-            <!-- Product Table -->
-            <div class="table-container mb-4">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Version</th>
-                            <th>Release Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Sample product data - students will replace with dynamic data -->
-                        <tr>
-                            <td>DRAFT10</td>
-                            <td>Draft Manager 1.0</td>
-                            <td>1.0</td>
-                            <td>2022-03-01</td>
-                            <td>
-                                <button class="btn btn-danger">Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>LEAG10</td>
-                            <td>League Scheduler 1.0</td>
-                            <td>1.0</td>
-                            <td>2021-06-01</td>
-                            <td>
-                                <button class="btn btn-danger">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Add Product Form -->
-            <div class="form-panel">
-                <h3>Add Product</h3>
-                <div class="form-group">
-                    <label for="code">Code:</label>
-                    <input type="text" id="code" name="code">
-                </div>
-                
-                <div class="form-group">
-                    <label for="name">Name:</label>
-                    <input type="text" id="name" name="name">
-                </div>
-                
-                <div class="form-group">
-                    <label for="version">Version:</label>
-                    <input type="number" id="version" name="version" step="0.1">
-                </div>
-                
-                <div class="form-group">
-                    <label for="releaseDate">Release Date:</label>
-                    <input type="date" id="releaseDate" name="releaseDate">
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Add Product</button>
-            </div>
+      <div class="main-panel">
+        <div class="header-section">
+          <h2>Product List</h2>
+          <a href="index.html">Home</a>
         </div>
+
+        <!-- Product Table -->
+        <div class="table-container mb-4">
+          <table id="productsTable">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Version</th>
+                <th>Release Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Products will be loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add Product Form -->
+        <div class="form-panel">
+          <h3>Add Product</h3>
+          <form id="addProductForm">
+            <div class="form-group">
+              <label for="code">Code:</label>
+              <input type="text" id="code" name="productCode" required />
+            </div>
+
+            <div class="form-group">
+              <label for="name">Name:</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="version">Version:</label>
+              <input
+                type="number"
+                id="version"
+                name="version"
+                step="0.1"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="releaseDate">Release Date:</label>
+              <input type="date" id="releaseDate" name="releaseDate" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Add Product</button>
+          </form>
+        </div>
+      </div>
     </main>
-    
+
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <p>&copy; 2025 SportsPro, Inc.</p>
-        </div>
+      <div class="container">
+        <p>&copy; 2025 SportsPro, Inc.</p>
+      </div>
     </footer>
-</body>
+
+    <script>
+      // DOM Elements
+      const productsTable = document
+        .getElementById("productsTable")
+        .getElementsByTagName("tbody")[0];
+      const addProductForm = document.getElementById("addProductForm");
+
+      // Base API URL
+      const API_BASE_URL = "http://localhost:8000/api/products";
+
+      // Load products when page loads
+      document.addEventListener("DOMContentLoaded", loadProducts);
+
+      // Form submission handler
+      addProductForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = {
+          productCode: addProductForm.productCode.value,
+          name: addProductForm.name.value,
+          version: parseFloat(addProductForm.version.value),
+          releaseDate: addProductForm.releaseDate.value,
+        };
+
+        try {
+          const response = await fetch(API_BASE_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to add product");
+          }
+
+          // Clear form and refresh table
+          addProductForm.reset();
+          loadProducts();
+
+          alert("Product added successfully!");
+        } catch (error) {
+          console.error("Error adding product:", error);
+          alert("Error adding product. Please try again.");
+        }
+      });
+
+      // Load products from API
+      async function loadProducts() {
+        try {
+          const response = await fetch(API_BASE_URL);
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch products");
+          }
+
+          const products = await response.json();
+          console.log(products);
+          renderProducts(products);
+        } catch (error) {
+          console.error("Error loading products:", error);
+          alert("Error loading products. Please try again.");
+        }
+      }
+
+      // Render products in the table
+      function renderProducts(products) {
+        productsTable.innerHTML = ""; // Clear existing rows
+
+        if (products.length === 0) {
+          const row = productsTable.insertRow();
+          const cell = row.insertCell(0);
+          cell.colSpan = 5;
+          cell.textContent = "No products found";
+          cell.style.textAlign = "center";
+          return;
+        }
+
+        products.forEach((product) => {
+          const row = productsTable.insertRow();
+
+          row.insertCell(0).textContent = product.productcode;
+          row.insertCell(1).textContent = product.name;
+          row.insertCell(2).textContent = product.version;
+
+          // Fixed date handling
+          const dateCell = row.insertCell(3);
+          dateCell.textContent = product.releasedate
+            ? product.releasedate.split("T")[0]
+            : "N/A";
+
+          const actionCell = row.insertCell(4);
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "btn btn-danger";
+          deleteBtn.textContent = "Delete";
+          deleteBtn.addEventListener("click", () =>
+            confirmDelete(product.productcode)
+          );
+          actionCell.appendChild(deleteBtn);
+        });
+      }
+
+      // Confirm and delete product
+      async function confirmDelete(productCode) {
+        if (
+          confirm(`Are you sure you want to delete product ${productCode}?`)
+        ) {
+          try {
+            const response = await fetch(`${API_BASE_URL}/${productCode}`, {
+              method: "DELETE",
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to delete product");
+            }
+
+            // Refresh the table
+            loadProducts();
+            alert("Product deleted successfully!");
+          } catch (error) {
+            console.error("Error deleting product:", error);
+            alert("Error deleting product. Please try again.");
+          }
+        }
+      }
+    </script>
+  </body>
 </html>
