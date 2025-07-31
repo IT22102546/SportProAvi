@@ -180,3 +180,68 @@ export const adminSignIn = async (req, res) => {
     res.status(500).json({ message: "Admin login failed" });
   }
 };
+
+export const technicianSignIn = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+    const { rows } = await pool.query(
+      `SELECT * FROM technicians WHERE email = $1`,
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Technician not found",
+      });
+    }
+
+    const technician = rows[0];
+
+    const validPassword = await bcrypt.compare(password, technician.password);
+    if (!validPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: technician.techid,
+        email: technician.email,
+        role: "technician",
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const { password: _, ...technicianData } = technician;
+
+    res
+      .cookie("access_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 3600000,
+      })
+      .status(200)
+      .json({
+        success: true,
+        user: technicianData,
+      });
+  } catch (error) {
+    console.error("Technician signin error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Technician login failed",
+    });
+  }
+};
