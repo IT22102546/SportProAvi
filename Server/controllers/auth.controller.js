@@ -56,8 +56,8 @@ export const signUp = async (req, res) => {
 
     await pool.query(
       `INSERT INTO customers 
-      (firstname, lastname, address, city, state, postalcode, countrycode, phone, email, password, role)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'customer')`,
+  (firstname, lastname, address, city, state, postalcode, countrycode, phone, email, password)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         firstname,
         lastname,
@@ -79,7 +79,56 @@ export const signUp = async (req, res) => {
   }
 };
 
-export const signIn = async (req, res) => {
+export const technicianLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
+    const { rows } = await pool.query(
+      `SELECT * FROM technicians WHERE email = $1`,
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Technician not found" });
+    }
+
+    const technician = rows[0];
+    const validPassword = await bcrypt.compare(password, technician.password);
+
+    if (!validPassword) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      {
+        id: technician.techid,
+        email: technician.email,
+        role: "technician",
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const { password: _, ...technicianData } = technician;
+
+    res.status(200).json({
+      success: true,
+      token,
+      user: technicianData,
+    });
+  } catch (error) {
+    console.error("Technician login error:", error);
+    res.status(500).json({ message: "Login failed" });
+  }
+};
+
+export const customerLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -98,8 +147,8 @@ export const signIn = async (req, res) => {
       return res.status(404).json({ message: "Customer not found" });
     }
 
-    const user = rows[0];
-    const validPassword = await bcrypt.compare(password, user.password);
+    const customer = rows[0];
+    const validPassword = await bcrypt.compare(password, customer.password);
 
     if (!validPassword) {
       return res.status(400).json({ message: "Invalid credentials" });
@@ -107,23 +156,23 @@ export const signIn = async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: user.customerid,
-        email: user.email,
-        role: user.role || "customer",
+        id: customer.customerid,
+        email: customer.email,
+        role: customer.role || "customer",
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    const { password: _, ...userData } = user;
+    const { password: _, ...customerData } = customer;
 
     res.status(200).json({
       success: true,
       token,
-      user: userData,
+      user: customerData,
     });
   } catch (error) {
-    console.error("Customer signin error:", error);
+    console.error("Customer login error:", error);
     res.status(500).json({ message: "Login failed" });
   }
 };
@@ -133,7 +182,7 @@ export const signOut = (req, res) => {
   return res.json({ success: true, message: "Logged out successfully" });
 };
 
-export const adminSignIn = async (req, res) => {
+export const adminLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -176,11 +225,10 @@ export const adminSignIn = async (req, res) => {
       user: adminData,
     });
   } catch (error) {
-    console.error("Admin signin error:", error);
+    console.error("Admin login error:", error);
     res.status(500).json({ message: "Admin login failed" });
   }
 };
-
 export const technicianSignIn = async (req, res) => {
   try {
     const { email, password } = req.body;
