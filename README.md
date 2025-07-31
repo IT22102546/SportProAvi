@@ -215,6 +215,12 @@ curl -X PUT http://localhost:8000/api/incident/123/assign   -H "Content-Type: ap
 
 ---
 
+## validation
+All password validated and hashed password added.
+Token created with JWT
+Access Levels added to Customer,Administrator and Technitians
+Separated lgings created for Acess level longins
+
 ## 🪪 License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more details.

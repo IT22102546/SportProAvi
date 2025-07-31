@@ -1,448 +1,448 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Update Incident - SportsPro Technical Support</title>
     <link rel="stylesheet" href="css/main.css" />
     <style>
-      .hidden {
-        display: none;
-      }
-      .technician-panel {
-        background: #f5f5f5;
-        padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-      }
-      .form-row {
-        display: flex;
-        gap: 15px;
-        align-items: flex-end;
-      }
-      .flex-grow {
-        flex: 1;
-      }
-      .mt-auto {
-        margin-top: auto;
-      }
-      .incident-info .detail-row {
-        display: flex;
-        margin-bottom: 10px;
-      }
-      .detail-label {
-        font-weight: bold;
-        width: 120px;
-      }
-      .detail-value {
-        flex: 1;
-      }
-      .checkbox-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 15px 0;
-      }
-      .button-group {
-        display: flex;
-        gap: 10px;
-      }
-      .success-panel {
-        margin-top: 20px;
-      }
+        .hidden { display: none; }
+        .technician-panel {
+            background: #f5f5f5;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .flex-grow { flex: 1; }
+        .mt-auto { margin-top: auto; }
+        .incident-info .detail-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .detail-label {
+            font-weight: bold;
+            width: 120px;
+        }
+        .detail-value { flex: 1; }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .success-panel { margin-top: 20px; }
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        /* Fix for disabled select visibility */
+        select:disabled {
+            opacity: 1;
+            background: #f5f5f5;
+            color: #000;
+        }
     </style>
-  </head>
-  <body>
-    <!-- Header -->
+</head>
+<body>
     <header class="header">
-      <div class="container">
-        <h1>SportsPro Technical Support</h1>
-        <p>Sports management software for the sports enthusiast</p>
-      </div>
+        <div class="container">
+            <h1>SportsPro Technical Support</h1>
+            <p>Sports management software for the sports enthusiast</p>
+        </div>
     </header>
 
-    <!-- Main Content -->
     <main class="container">
-      <div class="main-panel">
-        <div class="header-section">
-          <h2>Update Incident</h2>
-          <a href="index.html">Home</a>
+        <div class="main-panel">
+            <div class="header-section">
+                <h2>Update Incident</h2>
+                <a href="index.html">Home</a>
+            </div>
+
+            <div class="technician-panel mb-4">
+                <h3>Select Technician</h3>
+                <div class="form-row">
+                    <div class="form-group flex-grow">
+                        <label for="technician">Technician:</label>
+                        <select id="technician" name="technician">
+                            <option value="">Loading technicians...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button id="getIncidentsBtn" class="btn btn-primary mt-auto">
+                            Get Incidents
+                        </button>
+                    </div>
+                </div>
+                <div id="technicianAlert"></div>
+            </div>
+
+            <div id="incidentsPanel" class="incidents-panel mb-4 hidden">
+                <h3>Select Incident</h3>
+                <div class="table-container">
+                    <table id="incidentsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Date Opened</th>
+                                <th>Title</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="updatePanel" class="update-panel hidden">
+                <h3>Update Incident</h3>
+                <div class="incident-info mb-4">
+                    <div class="detail-row">
+                        <div class="detail-label">Incident ID:</div>
+                        <div id="incidentId" class="detail-value"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Customer:</div>
+                        <div id="customerInfo" class="detail-value"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Product:</div>
+                        <div id="productInfo" class="detail-value"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Date Opened:</div>
+                        <div id="dateOpened" class="detail-value"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Title:</div>
+                        <div id="incidentTitle" class="detail-value"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" rows="5"></textarea>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="closeIncident" name="closeIncident" />
+                    <label for="closeIncident">Close this incident</label>
+                </div>
+
+                <div class="button-group">
+                    <button id="updateBtn" class="btn btn-primary">
+                        Update Incident
+                    </button>
+                    <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+
+            <div id="successPanel" class="success-panel mt-4 hidden">
+                <div class="alert alert-success">
+                    <p id="successMessage">Incident was updated successfully.</p>
+                </div>
+            </div>
         </div>
-
-        <!-- Technician Selection -->
-        <div class="technician-panel mb-4">
-          <h3>Select Technician</h3>
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label for="technician">Technician:</label>
-              <select id="technician" name="technician">
-                <option value="">-- Select a Technician --</option>
-                <!-- Technicians will be loaded dynamically -->
-              </select>
-            </div>
-            <div class="form-group">
-              <button id="getIncidentsBtn" class="btn btn-primary mt-auto">
-                Get Incidents
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Assigned Incidents List -->
-        <div id="incidentsPanel" class="incidents-panel mb-4 hidden">
-          <h3>Select Incident</h3>
-          <div class="table-container">
-            <table id="incidentsTable">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Customer</th>
-                  <th>Product</th>
-                  <th>Date Opened</th>
-                  <th>Title</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Incidents will be loaded dynamically -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Update Incident Form (Initially hidden) -->
-        <div id="updatePanel" class="update-panel hidden">
-          <h3>Update Incident</h3>
-
-          <div class="incident-info mb-4">
-            <div class="detail-row">
-              <div class="detail-label">Incident ID:</div>
-              <div id="incidentId" class="detail-value"></div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Customer:</div>
-              <div id="customerInfo" class="detail-value"></div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Product:</div>
-              <div id="productInfo" class="detail-value"></div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Date Opened:</div>
-              <div id="dateOpened" class="detail-value"></div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Title:</div>
-              <div id="incidentTitle" class="detail-value"></div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="description">Description:</label>
-            <textarea id="description" name="description" rows="5"></textarea>
-          </div>
-
-          <div class="checkbox-group">
-            <input type="checkbox" id="closeIncident" name="closeIncident" />
-            <label for="closeIncident">Close this incident</label>
-          </div>
-
-          <div class="button-group">
-            <button id="updateBtn" class="btn btn-primary">
-              Update Incident
-            </button>
-            <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
-          </div>
-        </div>
-
-        <!-- Confirmation Message (Initially hidden) -->
-        <div id="successPanel" class="success-panel mt-4 hidden">
-          <div class="alert alert-success">
-            <p id="successMessage">Incident was updated successfully.</p>
-          </div>
-        </div>
-      </div>
     </main>
 
-    <!-- Footer -->
     <footer>
-      <div class="container">
-        <p>&copy; 2025 SportsPro, Inc.</p>
-      </div>
+        <div class="container">
+            <p>&copy; 2025 SportsPro, Inc.</p>
+        </div>
     </footer>
 
     <script>
-      const technicianSelect = document.getElementById("technician");
-      const getIncidentsBtn = document.getElementById("getIncidentsBtn");
-      const incidentsPanel = document.getElementById("incidentsPanel");
-      const incidentsTable = document
-        .getElementById("incidentsTable")
-        .getElementsByTagName("tbody")[0];
-      const updatePanel = document.getElementById("updatePanel");
-      const updateBtn = document.getElementById("updateBtn");
-      const cancelBtn = document.getElementById("cancelBtn");
-      const successPanel = document.getElementById("successPanel");
-      const successMessage = document.getElementById("successMessage");
+        // DOM Elements
+        const technicianSelect = document.getElementById("technician");
+        const getIncidentsBtn = document.getElementById("getIncidentsBtn");
+        const incidentsPanel = document.getElementById("incidentsPanel");
+        const incidentsTable = document.getElementById("incidentsTable").getElementsByTagName("tbody")[0];
+        const updatePanel = document.getElementById("updatePanel");
+        const updateBtn = document.getElementById("updateBtn");
+        const cancelBtn = document.getElementById("cancelBtn");
+        const successPanel = document.getElementById("successPanel");
+        const successMessage = document.getElementById("successMessage");
+        const incidentIdEl = document.getElementById("incidentId");
+        const customerInfoEl = document.getElementById("customerInfo");
+        const productInfoEl = document.getElementById("productInfo");
+        const dateOpenedEl = document.getElementById("dateOpened");
+        const incidentTitleEl = document.getElementById("incidentTitle");
+        const descriptionTextarea = document.getElementById("description");
+        const closeIncidentCheckbox = document.getElementById("closeIncident");
+        const technicianAlert = document.getElementById("technicianAlert");
 
-      const incidentIdEl = document.getElementById("incidentId");
-      const customerInfoEl = document.getElementById("customerInfo");
-      const productInfoEl = document.getElementById("productInfo");
-      const dateOpenedEl = document.getElementById("dateOpened");
-      const incidentTitleEl = document.getElementById("incidentTitle");
-      const descriptionTextarea = document.getElementById("description");
-      const closeIncidentCheckbox = document.getElementById("closeIncident");
+        // API Endpoints
+        const TECHNICIANS_API = "http://localhost:8000/api/technicians";
+        const INCIDENTS_API = "http://localhost:8000/api/incident";
 
-      const TECHNICIANS_API = "http://localhost:8000/api/technicians";
-      const INCIDENTS_API = "http://localhost:8000/api/incident";
+        // State
+        let selectedIncident = null;
+        let currentTechnicianId = null;
 
-      let selectedIncident = null;
-      let currentTechnicianId = null;
+        // Auth
+        const token = localStorage.getItem("token");
+        const userRole = localStorage.getItem("userRole");
+        const userId = localStorage.getItem("userId");
 
-      const token = localStorage.getItem("token");
-      const userRole = localStorage.getItem("userRole");
-      const userId = localStorage.getItem("userId");
-
-      const authHeaders = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      };
-
-      if (!token) {
-        alert("You are not authenticated. Please login first.");
-        window.location.href = "login.html";
-      }
-
-      function handleUnauthorized() {
-        alert("Your session has expired. Please login again.");
-        localStorage.removeItem("token");
-        localStorage.removeItem("userRole");
-        localStorage.removeItem("user");
-        window.location.href = "login.html";
-      }
-
-      document.addEventListener("DOMContentLoaded", async () => {
-        try {
-          if (!["admin", "technician"].includes(userRole)) {
-            alert("You are not authorized to view this page");
-            window.location.href = "index.html";
-            return;
-          }
-
-          if (userRole === "technician") {
-            currentTechnicianId = userId;
-            technicianSelect.value = userId;
-            technicianSelect.disabled = true;
-            await getIncidentsHandler();
-          }
-
-          await loadTechnicians();
-          setupEventListeners();
-        } catch (error) {
-          console.error("Error loading initial data:", error);
-          alert("Error loading technicians. Please try again later.");
-        }
-      });
-
-      function setupEventListeners() {
-        getIncidentsBtn.addEventListener("click", getIncidentsHandler);
-        updateBtn.addEventListener("click", updateIncidentHandler);
-        cancelBtn.addEventListener("click", cancelUpdateHandler);
-      }
-
-      async function loadTechnicians() {
-        try {
-          const response = await fetch(TECHNICIANS_API, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (response.status === 401) {
-            handleUnauthorized();
-            return;
-          }
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to fetch technicians");
-          }
-
-          const technicians = await response.json();
-          renderTechnicians(technicians);
-        } catch (error) {
-          console.error("Error loading technicians:", error);
-          throw error;
-        }
-      }
-
-      function renderTechnicians(technicians) {
-        technicianSelect.innerHTML =
-          '<option value="">-- Select a Technician --</option>';
-
-        technicians.forEach((tech) => {
-          const option = document.createElement("option");
-          option.value = tech.techid;
-          option.textContent = `${tech.firstname} ${tech.lastname} (${tech.email})`;
-          technicianSelect.appendChild(option);
-        });
-
-        if (userRole === "technician") {
-          technicianSelect.value = userId;
-          technicianSelect.disabled = true;
-        }
-      }
-
-      async function getIncidentsHandler() {
-        const techId = technicianSelect.value;
-        if (!techId) {
-          alert("Please select a technician");
-          return;
+        if (!token) {
+            window.location.href = "login.html";
         }
 
-        currentTechnicianId = techId;
+        // Initialize
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                if (!["admin", "technician"].includes(userRole)) {
+                    showAlert("You are not authorized to view this page", "warning");
+                    setTimeout(() => window.location.href = "index.html", 2000);
+                    return;
+                }
 
-        try {
-          const response = await fetch(`${INCIDENTS_API}?techId=${techId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+                // Disable controls while loading
+                technicianSelect.disabled = true;
+                getIncidentsBtn.disabled = true;
 
-          if (response.status === 401) {
-            handleUnauthorized();
-            return;
-          }
+                // Load technicians
+                await loadTechnicians();
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to fetch incidents");
-          }
+                // Handle technician-specific logic
+                if (userRole === "technician") {
+                    currentTechnicianId = userId;
+                    const techOption = Array.from(technicianSelect.options).find(
+                        opt => opt.value === userId
+                    );
+                    
+                    if (techOption) {
+                        technicianSelect.value = userId;
+                        technicianSelect.disabled = true;
+                        await getIncidentsHandler();
+                    } else {
+                      
+                    }
+                }
 
-          const result = await response.json();
-          const incidents = result.data || [];
-
-          if (incidents.length === 0) {
-            alert("No incidents found for this technician");
-            incidentsPanel.classList.add("hidden");
-            return;
-          }
-
-          renderIncidents(incidents);
-          incidentsPanel.classList.remove("hidden");
-          updatePanel.classList.add("hidden");
-          successPanel.classList.add("hidden");
-        } catch (error) {
-          console.error("Error loading incidents:", error);
-          alert(`Error loading incidents: ${error.message}`);
-        }
-      }
-
-      function renderIncidents(incidents) {
-        incidentsTable.innerHTML = "";
-
-        incidents.forEach((incident) => {
-          const row = incidentsTable.insertRow();
-
-          row.insertCell(0).textContent = incident.incidentid;
-          row.insertCell(1).textContent = incident.customername || "N/A";
-          row.insertCell(2).textContent = incident.productname || "N/A";
-          row.insertCell(3).textContent = formatDate(incident.dateopened);
-          row.insertCell(4).textContent = incident.title;
-
-          const actionCell = row.insertCell(5);
-          const selectBtn = document.createElement("button");
-          selectBtn.className = "btn btn-primary";
-          selectBtn.textContent = "Select";
-          selectBtn.addEventListener("click", () => selectIncident(incident));
-          actionCell.appendChild(selectBtn);
-        });
-      }
-
-      function selectIncident(incident) {
-        selectedIncident = incident;
-
-        incidentIdEl.textContent = incident.incidentid;
-        customerInfoEl.textContent = incident.customername
-          ? `${incident.customername} (${incident.customeremail || "no email"})`
-          : "N/A";
-        productInfoEl.textContent = incident.productname
-          ? `${incident.productcode} (${incident.productname})`
-          : "N/A";
-        dateOpenedEl.textContent = formatDate(incident.dateopened);
-        incidentTitleEl.textContent = incident.title;
-        descriptionTextarea.value = incident.description || "";
-
-        closeIncidentCheckbox.checked = !!incident.dateclosed;
-
-        updatePanel.classList.remove("hidden");
-        updatePanel.scrollIntoView({ behavior: "smooth" });
-      }
-
-      async function updateIncidentHandler() {
-        if (!selectedIncident) return;
-
-        const description = descriptionTextarea.value.trim();
-        const closeIncident = closeIncidentCheckbox.checked;
-
-        try {
-          const updateData = {
-            description,
-            dateClosed: closeIncident ? new Date().toISOString() : null,
-          };
-
-          const response = await fetch(
-            `${INCIDENTS_API}/${selectedIncident.incidentid}`,
-            {
-              method: "PUT",
-              headers: authHeaders,
-              body: JSON.stringify(updateData),
+                setupEventListeners();
+            } catch (error) {
+                console.error("Initialization error:", error);
+                showAlert("Error loading page. Please try again.", "warning");
+            } finally {
+                technicianSelect.disabled = false;
+                getIncidentsBtn.disabled = false;
             }
-          );
+        });
 
-          if (response.status === 401) {
-            handleUnauthorized();
-            return;
-          }
-
-          const result = await response.json();
-
-          if (!response.ok) {
-            throw new Error(result.message || "Failed to update incident");
-          }
-
-          successMessage.textContent = `Incident #${selectedIncident.incidentid} was updated successfully.`;
-          successPanel.classList.remove("hidden");
-
-          if (currentTechnicianId) {
-            await getIncidentsHandler();
-          }
-
-          updatePanel.classList.add("hidden");
-
-          successPanel.scrollIntoView({ behavior: "smooth" });
-        } catch (error) {
-          console.error("Error updating incident:", error);
-          alert(`Error updating incident: ${error.message}`);
+        // Functions
+        function setupEventListeners() {
+            getIncidentsBtn.addEventListener("click", getIncidentsHandler);
+            updateBtn.addEventListener("click", updateIncidentHandler);
+            cancelBtn.addEventListener("click", cancelUpdateHandler);
         }
-      }
 
-      function cancelUpdateHandler() {
-        updatePanel.classList.add("hidden");
-        selectedIncident = null;
-      }
-
-      function formatDate(dateString) {
-        if (!dateString) return "N/A";
-        try {
-          const date = new Date(dateString);
-          return isNaN(date.getTime())
-            ? "Invalid Date"
-            : date.toISOString().split("T")[0];
-        } catch (e) {
-          console.error("Date formatting error:", e);
-          return "Invalid Date";
+        function showAlert(message, type = "warning") {
+            technicianAlert.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            setTimeout(() => {
+                technicianAlert.innerHTML = "";
+            }, 5000);
         }
-      }
+
+        async function loadTechnicians() {
+            try {
+                const response = await fetch(TECHNICIANS_API, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.status === 401) handleUnauthorized();
+                if (!response.ok) throw new Error("Failed to fetch technicians");
+
+                const technicians = await response.json();
+                
+                if (!technicians || technicians.length === 0) {
+                    showAlert("No technicians available", "warning");
+                    return;
+                }
+                
+                renderTechnicians(technicians);
+            } catch (error) {
+                console.error("Error loading technicians:", error);
+                showAlert("Error loading technicians. Please refresh the page.", "warning");
+            }
+        }
+
+        function renderTechnicians(technicians) {
+            technicianSelect.innerHTML = '<option value="">-- Select a Technician --</option>';
+            
+            technicians.forEach(tech => {
+                if (!tech.techid) return;
+                const option = new Option(
+                    `${tech.firstname} ${tech.lastname} (${tech.email})`,
+                    tech.techid
+                );
+                technicianSelect.add(option);
+            });
+        }
+
+        async function getIncidentsHandler() {
+            const techId = technicianSelect.value;
+            if (!techId) {
+                showAlert("Please select a technician", "warning");
+                return;
+            }
+
+            try {
+                getIncidentsBtn.disabled = true;
+                getIncidentsBtn.textContent = "Loading...";
+                
+                const response = await fetch(`${INCIDENTS_API}?techId=${techId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.status === 401) handleUnauthorized();
+                if (!response.ok) throw new Error("Failed to fetch incidents");
+
+                const result = await response.json();
+                const incidents = result.data || [];
+
+                if (incidents.length === 0) {
+                    showAlert("No incidents found for this technician", "info");
+                    incidentsPanel.classList.add("hidden");
+                    return;
+                }
+
+                renderIncidents(incidents);
+                incidentsPanel.classList.remove("hidden");
+                updatePanel.classList.add("hidden");
+                successPanel.classList.add("hidden");
+            } catch (error) {
+                console.error("Error loading incidents:", error);
+                showAlert(`Error loading incidents: ${error.message}`, "warning");
+            } finally {
+                getIncidentsBtn.disabled = false;
+                getIncidentsBtn.textContent = "Get Incidents";
+            }
+        }
+
+        function renderIncidents(incidents) {
+            incidentsTable.innerHTML = "";
+
+            incidents.forEach(incident => {
+                const row = incidentsTable.insertRow();
+                row.insertCell(0).textContent = incident.incidentid;
+                row.insertCell(1).textContent = incident.customername || "N/A";
+                row.insertCell(2).textContent = incident.productname || "N/A";
+                row.insertCell(3).textContent = formatDate(incident.dateopened);
+                row.insertCell(4).textContent = incident.title;
+
+                const actionCell = row.insertCell(5);
+                const selectBtn = document.createElement("button");
+                selectBtn.className = "btn btn-primary";
+                selectBtn.textContent = "Select";
+                selectBtn.addEventListener("click", () => selectIncident(incident));
+                actionCell.appendChild(selectBtn);
+            });
+        }
+
+        function selectIncident(incident) {
+            selectedIncident = incident;
+            incidentIdEl.textContent = incident.incidentid;
+            customerInfoEl.textContent = incident.customername 
+                ? `${incident.customername} (${incident.customeremail || "no email"})` 
+                : "N/A";
+            productInfoEl.textContent = incident.productname 
+                ? `${incident.productcode} (${incident.productname})` 
+                : "N/A";
+            dateOpenedEl.textContent = formatDate(incident.dateopened);
+            incidentTitleEl.textContent = incident.title;
+            descriptionTextarea.value = incident.description || "";
+            closeIncidentCheckbox.checked = !!incident.dateclosed;
+
+            updatePanel.classList.remove("hidden");
+            updatePanel.scrollIntoView({ behavior: "smooth" });
+        }
+
+        async function updateIncidentHandler() {
+            if (!selectedIncident) return;
+
+            try {
+                updateBtn.disabled = true;
+                updateBtn.textContent = "Updating...";
+                
+                const updateData = {
+                    description: descriptionTextarea.value.trim(),
+                    dateClosed: closeIncidentCheckbox.checked ? new Date().toISOString() : null
+                };
+
+                const response = await fetch(`${INCIDENTS_API}/${selectedIncident.incidentid}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.status === 401) handleUnauthorized();
+                if (!response.ok) throw new Error("Failed to update incident");
+
+                successMessage.textContent = `Incident #${selectedIncident.incidentid} was updated successfully.`;
+                successPanel.classList.remove("hidden");
+
+                if (currentTechnicianId) await getIncidentsHandler();
+                updatePanel.classList.add("hidden");
+                successPanel.scrollIntoView({ behavior: "smooth" });
+            } catch (error) {
+                console.error("Error updating incident:", error);
+                showAlert(`Error updating incident: ${error.message}`, "warning");
+            } finally {
+                updateBtn.disabled = false;
+                updateBtn.textContent = "Update Incident";
+            }
+        }
+
+        function cancelUpdateHandler() {
+            updatePanel.classList.add("hidden");
+            selectedIncident = null;
+        }
+
+        function handleUnauthorized() {
+            showAlert("Your session has expired. Please login again.", "warning");
+            localStorage.removeItem("token");
+            localStorage.removeItem("userRole");
+            localStorage.removeItem("user");
+            setTimeout(() => window.location.href = "login.html", 2000);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return "N/A";
+            try {
+                const date = new Date(dateString);
+                return isNaN(date.getTime()) 
+                    ? "Invalid Date" 
+                    : date.toISOString().split("T")[0];
+            } catch (e) {
+                console.error("Date formatting error:", e);
+                return "Invalid Date";
+            }
+        }
     </script>
-  </body>
+</body>
 </html>

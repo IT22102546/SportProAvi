@@ -29,31 +29,40 @@ export const getTechnicianById = async (req, res, next) => {
   }
 };
 
+import bcrypt from 'bcrypt';
+
 export const createTechnician = async (req, res, next) => {
   try {
     const { firstName, lastName, email, phone, password } = req.body;
-    console.log(firstName, lastName, email, phone, password)
     
-    // Basic validation
-    if (!firstName || !lastName || !email || !phone) {
+  
+    if (!firstName || !lastName || !email || !phone || !password) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields"
+        message: "All fields are required"
       });
     }
+
+    
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const { rows } = await req.db.query(
       `INSERT INTO Technicians (firstName, lastName, email, phone, password)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [firstName, lastName, email, phone, password]
+      [firstName, lastName, email, phone, hashedPassword] 
     );
     
+
+    const technicianData = rows[0];
+    delete technicianData.password;
+
     res.status(201).json({
       success: true,
-      data: rows[0]
+      data: technicianData
     });
   } catch (err) {
-    if (err.code === '23505') { // Unique violation
+    if (err.code === '23505') { 
       return res.status(409).json({ 
         success: false,
         message: "Email already exists" 
@@ -62,13 +71,12 @@ export const createTechnician = async (req, res, next) => {
     next(err);
   }
 };
-
 export const updateTechnician = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { firstName, lastName, email, phone, password } = req.body;
 
-    // Check if technician exists
+    
     const checkResult = await req.db.query(
       "SELECT 1 FROM Technicians WHERE techID = $1",
       [id]
@@ -112,7 +120,7 @@ export const deleteTechnician = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Check if technician exists
+    
     const checkResult = await req.db.query(
       "SELECT 1 FROM Technicians WHERE techID = $1",
       [id]
@@ -125,7 +133,7 @@ export const deleteTechnician = async (req, res, next) => {
       });
     }
 
-    // Check if technician is assigned to any incidents
+
     const incidentsResult = await req.db.query(
       "SELECT 1 FROM Incidents WHERE techID = $1 LIMIT 1",
       [id]

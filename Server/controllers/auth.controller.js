@@ -181,7 +181,6 @@ export const signOut = (req, res) => {
   res.clearCookie("token");
   return res.json({ success: true, message: "Logged out successfully" });
 };
-
 export const adminLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -202,9 +201,9 @@ export const adminLogin = async (req, res) => {
     }
 
     const admin = rows[0];
-    const validPassword = await bcrypt.compare(password, admin.password);
-
-    if (!validPassword) {
+    
+    // Direct password comparison (without hashing)
+    if (password !== admin.password) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
