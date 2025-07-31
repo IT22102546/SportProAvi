@@ -141,6 +141,18 @@
       // Load products when page loads
       document.addEventListener("DOMContentLoaded", async () => {
         try {
+          // Check if user is already logged in
+          const token = localStorage.getItem("token");
+          const userRole = localStorage.getItem("userRole");
+
+          if (token && userRole === "customer") {
+            // User is already logged in as customer
+            currentCustomer = JSON.parse(localStorage.getItem("user"));
+            customerNameEl.textContent = `${currentCustomer.firstname} ${currentCustomer.lastname}`;
+            loginPanel.classList.add("hidden");
+            registrationPanel.classList.remove("hidden");
+          }
+
           await loadProducts();
           setupEventListeners();
         } catch (error) {
@@ -156,10 +168,20 @@
         registerAnotherBtn.addEventListener("click", registerAnotherHandler);
       }
 
+      // Handle unauthorized access
+      function handleUnauthorized() {
+        alert("Your session has expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+      }
+
       // Load products from API
       async function loadProducts() {
         try {
           const response = await fetch(PRODUCTS_API);
+
           if (!response.ok) {
             throw new Error("Failed to fetch products");
           }
@@ -206,12 +228,22 @@
 
           const result = await response.json();
 
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!response.ok) {
             throw new Error(result.message || "Login failed");
           }
 
-          // Save customer data
-          currentCustomer = result.data;
+          // Save customer data and token
+          currentCustomer = result.user;
+          localStorage.setItem("token", result.token);
+          localStorage.setItem("userRole", "customer");
+          localStorage.setItem("user", JSON.stringify(currentCustomer));
+          localStorage.setItem("userId", currentCustomer.customerid);
+
           customerNameEl.textContent = `${currentCustomer.firstname} ${currentCustomer.lastname}`;
 
           // Switch to registration panel
@@ -230,18 +262,30 @@
         e.preventDefault();
 
         const productCode = productSelect.value;
+        const token = localStorage.getItem("token");
+
+        if (!token || !currentCustomer) {
+          handleUnauthorized();
+          return;
+        }
 
         try {
           const response = await fetch(REGISTRATIONS_API, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
               customerId: currentCustomer.customerid,
               productCode: productCode,
             }),
           });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
 
           const result = await response.json();
 

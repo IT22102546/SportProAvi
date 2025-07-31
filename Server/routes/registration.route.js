@@ -13,6 +13,11 @@ router.get(
   authorizeRoles("admin", "customer"),
   getRegistrationsByCustomer
 );
-router.post("/", verifyToken, authorizeRoles("customer"), registerProduct);
+router.post(
+  "/",
+  verifyToken,
+  authorizeRoles("customer", "admin"),
+  registerProduct
+);
 
 export default router;

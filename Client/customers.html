@@ -162,7 +162,20 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // DOM elements
+        const token = localStorage.getItem("token");
+        const userRole = localStorage.getItem("userRole");
+
+        if (!token) {
+          alert("You are not authenticated. Please login first.");
+          window.location.href = "login.html";
+          return;
+        }
+
+        const authHeaders = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        };
+
         const searchBtn = document.getElementById("searchBtn");
         const lastNameInput = document.getElementById("lastName");
         const resultsTableBody = document.getElementById("resultsTableBody");
@@ -172,7 +185,6 @@
         const updateBtn = document.getElementById("updateBtn");
         const cancelBtn = document.getElementById("cancelBtn");
 
-        // Form fields
         const customerIdField = document.getElementById("customerId");
         const firstNameField = document.getElementById("firstName");
         const lastNameField = document.getElementById("editLastName");
@@ -185,23 +197,46 @@
         const emailField = document.getElementById("email");
         const passwordField = document.getElementById("password");
 
-        // Store all customers
         let allCustomers = [];
         let displayedCustomers = [];
 
-        // Event listeners
         searchBtn.addEventListener("click", filterCustomers);
         updateBtn.addEventListener("click", updateCustomer);
         cancelBtn.addEventListener("click", cancelEdit);
 
-        // Load data when page loads
         loadAllCustomers();
         loadCountries();
 
-        // Function to load all customers
+        function handleUnauthorized() {
+          alert("Your session has expired. Please login again.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("userRole");
+          localStorage.removeItem("user");
+          window.location.href = "login.html";
+        }
+
         async function loadAllCustomers() {
           try {
-            const response = await fetch("http://localhost:8000/api/customers");
+            if (userRole !== "admin") {
+              resultsTableBody.innerHTML =
+                '<tr><td colspan="4">You must be an admin to view all customers</td></tr>';
+              return;
+            }
+
+            const response = await fetch(
+              "http://localhost:8000/api/customers",
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            if (response.status === 401) {
+              handleUnauthorized();
+              return;
+            }
+
             const data = await response.json();
 
             if (!response.ok) {
@@ -217,15 +252,17 @@
           }
         }
 
-        // Function to filter customers by last name
         function filterCustomers() {
           const searchTerm = lastNameInput.value.trim().toLowerCase();
 
           if (!searchTerm) {
-            // If search is empty, show all customers
-            displayedCustomers = [...allCustomers];
+            if (userRole === "admin") {
+              displayedCustomers = [...allCustomers];
+            } else {
+              searchError.textContent = "Please enter a last name to search";
+              return;
+            }
           } else {
-            // Filter customers whose lastname contains the search term
             displayedCustomers = allCustomers.filter((customer) =>
               customer.lastname.toLowerCase().includes(searchTerm)
             );
@@ -234,7 +271,6 @@
           displayResults(displayedCustomers);
         }
 
-        // Function to display results
         function displayResults(customers) {
           resultsTableBody.innerHTML = "";
 
@@ -247,19 +283,20 @@
           customers.forEach((customer) => {
             const row = document.createElement("tr");
             row.innerHTML = `
-                        <td>${customer.firstname} ${customer.lastname}</td>
-                        <td>${customer.email}</td>
-                        <td>${customer.phone || "N/A"}</td>
-                        <td>
-                            <button class="btn btn-primary view-edit-btn" data-id="${
-                              customer.customerid
-                            }">View/Edit</button>
-                        </td>
-                    `;
+          <td>${customer.firstname} ${customer.lastname}</td>
+          <td>${customer.email}</td>
+          <td>${customer.phone || "N/A"}</td>
+          <td>
+            <button class="btn btn-primary view-edit-btn" data-id="${
+              customer.customerid
+            }">
+              ${userRole === "admin" ? "View/Edit" : "View"}
+            </button>
+          </td>
+        `;
             resultsTableBody.appendChild(row);
           });
 
-          // Add event listeners to the new buttons
           document.querySelectorAll(".view-edit-btn").forEach((btn) => {
             btn.addEventListener("click", function () {
               loadCustomerForEdit(this.dataset.id);
@@ -267,12 +304,22 @@
           });
         }
 
-        // Function to load customer data for editing
         async function loadCustomerForEdit(customerId) {
           try {
             const response = await fetch(
-              `http://localhost:8000/api/customers/${customerId}`
+              `http://localhost:8000/api/customers/${customerId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
             );
+
+            if (response.status === 401) {
+              handleUnauthorized();
+              return;
+            }
+
             const data = await response.json();
 
             if (!response.ok) {
@@ -281,7 +328,6 @@
 
             const customer = data.data;
 
-            // Populate form fields (using lowercase attribute names)
             customerIdField.value = customer.customerid;
             firstNameField.value = customer.firstname;
             lastNameField.value = customer.lastname;
@@ -294,11 +340,26 @@
             emailField.value = customer.email;
             passwordField.value = "";
 
-            // Show the edit form
+            const isEditable =
+              userRole === "admin" ||
+              (userRole === "customer" &&
+                customerId === localStorage.getItem("userId"));
+
+            firstNameField.disabled = !isEditable;
+            lastNameField.disabled = !isEditable;
+            addressField.disabled = !isEditable;
+            cityField.disabled = !isEditable;
+            stateField.disabled = !isEditable;
+            postalCodeField.disabled = !isEditable;
+            countryField.disabled = !isEditable;
+            phoneField.disabled = !isEditable;
+            emailField.disabled = !isEditable;
+            passwordField.disabled = !isEditable;
+            updateBtn.disabled = !isEditable;
+
             editFormPanel.classList.remove("hidden");
             formError.textContent = "";
 
-            // Scroll to the form
             editFormPanel.scrollIntoView({ behavior: "smooth" });
           } catch (error) {
             formError.textContent = error.message;
@@ -306,7 +367,6 @@
           }
         }
 
-        // Function to update customer
         async function updateCustomer() {
           const customerId = customerIdField.value;
           const password = passwordField.value.trim();
@@ -324,7 +384,6 @@
             password: password ? password : undefined,
           };
 
-          // Basic validation
           if (
             !customerData.firstname ||
             !customerData.lastname ||
@@ -342,12 +401,15 @@
               `http://localhost:8000/api/customers/${customerId}`,
               {
                 method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
+                headers: authHeaders,
                 body: JSON.stringify(customerData),
               }
             );
+
+            if (response.status === 401) {
+              handleUnauthorized();
+              return;
+            }
 
             const data = await response.json();
 
@@ -355,27 +417,25 @@
               throw new Error(data.message || "Failed to update customer");
             }
 
-            // Show success and refresh the data
             alert("Customer updated successfully!");
             cancelEdit();
-            loadAllCustomers(); // Refresh the customer list
+
+            if (userRole === "admin") {
+              loadAllCustomers();
+            }
           } catch (error) {
             formError.textContent = error.message;
             console.error("Update error:", error);
           }
         }
 
-        // Function to cancel editing
         function cancelEdit() {
           editFormPanel.classList.add("hidden");
           formError.textContent = "";
         }
 
-        // Function to load countries into the select dropdown
         async function loadCountries() {
           try {
-            // In a real app, you would fetch this from your API
-            // For now, we'll just add a few more countries to the existing ones
             const additionalCountries = [
               { code: "GB", name: "United Kingdom" },
               { code: "AU", name: "Australia" },

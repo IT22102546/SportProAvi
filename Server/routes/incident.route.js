@@ -14,13 +14,13 @@ router.post("/", verifyToken, authorizeRoles("customer"), createIncident);
 router.put(
   "/:id/assign",
   verifyToken,
-  authorizeRoles("customer"),
+  authorizeRoles("customer", "admin"),
   assignTechnician
 );
 router.get(
   "/",
   verifyToken,
-  authorizeRoles("customer", "technician"),
+  authorizeRoles("customer", "technician", "admin"),
   getIncidents
 );
 router.get(

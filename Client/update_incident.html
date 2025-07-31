@@ -172,7 +172,6 @@
     </footer>
 
     <script>
-      // DOM Elements
       const technicianSelect = document.getElementById("technician");
       const getIncidentsBtn = document.getElementById("getIncidentsBtn");
       const incidentsPanel = document.getElementById("incidentsPanel");
@@ -185,7 +184,6 @@
       const successPanel = document.getElementById("successPanel");
       const successMessage = document.getElementById("successMessage");
 
-      // Incident detail elements
       const incidentIdEl = document.getElementById("incidentId");
       const customerInfoEl = document.getElementById("customerInfo");
       const productInfoEl = document.getElementById("productInfo");
@@ -194,17 +192,49 @@
       const descriptionTextarea = document.getElementById("description");
       const closeIncidentCheckbox = document.getElementById("closeIncident");
 
-      // API Endpoints
       const TECHNICIANS_API = "http://localhost:8000/api/technicians";
       const INCIDENTS_API = "http://localhost:8000/api/incident";
 
-      // Current selected incident
       let selectedIncident = null;
       let currentTechnicianId = null;
 
-      // Load data when page loads
+      const token = localStorage.getItem("token");
+      const userRole = localStorage.getItem("userRole");
+      const userId = localStorage.getItem("userId");
+
+      const authHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      if (!token) {
+        alert("You are not authenticated. Please login first.");
+        window.location.href = "login.html";
+      }
+
+      function handleUnauthorized() {
+        alert("Your session has expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+      }
+
       document.addEventListener("DOMContentLoaded", async () => {
         try {
+          if (!["admin", "technician"].includes(userRole)) {
+            alert("You are not authorized to view this page");
+            window.location.href = "index.html";
+            return;
+          }
+
+          if (userRole === "technician") {
+            currentTechnicianId = userId;
+            technicianSelect.value = userId;
+            technicianSelect.disabled = true;
+            await getIncidentsHandler();
+          }
+
           await loadTechnicians();
           setupEventListeners();
         } catch (error) {
@@ -213,19 +243,28 @@
         }
       });
 
-      // Set up event listeners
       function setupEventListeners() {
         getIncidentsBtn.addEventListener("click", getIncidentsHandler);
         updateBtn.addEventListener("click", updateIncidentHandler);
         cancelBtn.addEventListener("click", cancelUpdateHandler);
       }
 
-      // Load technicians from API
       async function loadTechnicians() {
         try {
-          const response = await fetch(TECHNICIANS_API);
+          const response = await fetch(TECHNICIANS_API, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!response.ok) {
-            throw new Error("Failed to fetch technicians");
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch technicians");
           }
 
           const technicians = await response.json();
@@ -236,7 +275,6 @@
         }
       }
 
-      // Render technicians in dropdown
       function renderTechnicians(technicians) {
         technicianSelect.innerHTML =
           '<option value="">-- Select a Technician --</option>';
@@ -247,9 +285,13 @@
           option.textContent = `${tech.firstname} ${tech.lastname} (${tech.email})`;
           technicianSelect.appendChild(option);
         });
+
+        if (userRole === "technician") {
+          technicianSelect.value = userId;
+          technicianSelect.disabled = true;
+        }
       }
 
-      // Get incidents handler
       async function getIncidentsHandler() {
         const techId = technicianSelect.value;
         if (!techId) {
@@ -260,9 +302,20 @@
         currentTechnicianId = techId;
 
         try {
-          const response = await fetch(`${INCIDENTS_API}?techId=${techId}`);
+          const response = await fetch(`${INCIDENTS_API}?techId=${techId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!response.ok) {
-            throw new Error("Failed to fetch incidents");
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch incidents");
           }
 
           const result = await response.json();
@@ -284,7 +337,6 @@
         }
       }
 
-      // Render incidents in the table
       function renderIncidents(incidents) {
         incidentsTable.innerHTML = "";
 
@@ -306,11 +358,9 @@
         });
       }
 
-      // Select incident handler
       function selectIncident(incident) {
         selectedIncident = incident;
 
-        // Update incident details
         incidentIdEl.textContent = incident.incidentid;
         customerInfoEl.textContent = incident.customername
           ? `${incident.customername} (${incident.customeremail || "no email"})`
@@ -322,15 +372,12 @@
         incidentTitleEl.textContent = incident.title;
         descriptionTextarea.value = incident.description || "";
 
-        // Set checkbox based on whether incident is closed
         closeIncidentCheckbox.checked = !!incident.dateclosed;
 
-        // Show update panel
         updatePanel.classList.remove("hidden");
         updatePanel.scrollIntoView({ behavior: "smooth" });
       }
 
-      // Update incident handler
       async function updateIncidentHandler() {
         if (!selectedIncident) return;
 
@@ -347,12 +394,15 @@
             `${INCIDENTS_API}/${selectedIncident.incidentid}`,
             {
               method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: authHeaders,
               body: JSON.stringify(updateData),
             }
           );
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
 
           const result = await response.json();
 
@@ -360,19 +410,15 @@
             throw new Error(result.message || "Failed to update incident");
           }
 
-          // Show success message
           successMessage.textContent = `Incident #${selectedIncident.incidentid} was updated successfully.`;
           successPanel.classList.remove("hidden");
 
-          // Reload incidents for the current technician
           if (currentTechnicianId) {
             await getIncidentsHandler();
           }
 
-          // Hide update panel
           updatePanel.classList.add("hidden");
 
-          // Scroll to success message
           successPanel.scrollIntoView({ behavior: "smooth" });
         } catch (error) {
           console.error("Error updating incident:", error);
@@ -380,13 +426,11 @@
         }
       }
 
-      // Cancel update handler
       function cancelUpdateHandler() {
         updatePanel.classList.add("hidden");
         selectedIncident = null;
       }
 
-      // Helper function to format date
       function formatDate(dateString) {
         if (!dateString) return "N/A";
         try {

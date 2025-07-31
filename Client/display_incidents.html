@@ -190,14 +190,12 @@
     </footer>
 
     <script>
-      // DOM Elements
       const incidentsTable = document
         .getElementById("incidentsTable")
         .getElementsByTagName("tbody")[0];
       const detailsPanel = document.getElementById("detailsPanel");
       const closeDetailsBtn = document.getElementById("closeDetails");
 
-      // Filter elements
       const statusFilter = document.getElementById("statusFilter");
       const dateFrom = document.getElementById("dateFrom");
       const dateTo = document.getElementById("dateTo");
@@ -205,7 +203,6 @@
       const applyFilters = document.getElementById("applyFilters");
       const resetFilters = document.getElementById("resetFilters");
 
-      // Detail elements
       const detailId = document.getElementById("detailId");
       const detailCustomer = document.getElementById("detailCustomer");
       const detailProduct = document.getElementById("detailProduct");
@@ -213,19 +210,43 @@
       const detailDateClosed = document.getElementById("detailDateClosed");
       const detailTitle = document.getElementById("detailTitle");
       const detailTechnician = document.getElementById("detailTechnician");
-      //   const detailStatus = document.getElementById("detailStatus");
       const detailDescription = document.getElementById("detailDescription");
 
-      // API Endpoint
-     const INCIDENTS_API = "http://localhost:8000/api/incident";
+      const INCIDENTS_API = "http://localhost:8000/api/incident";
 
-      // Current selected incident
       let selectedIncident = null;
       let allIncidents = [];
 
-      // Load data when page loads
+      const token = localStorage.getItem("token");
+      const userRole = localStorage.getItem("userRole");
+      const userId = localStorage.getItem("userId");
+
+      const authHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      if (!token) {
+        alert("You are not authenticated. Please login first.");
+        window.location.href = "login.html";
+      }
+
+      function handleUnauthorized() {
+        alert("Your session has expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+      }
+
       document.addEventListener("DOMContentLoaded", async () => {
         try {
+          if (!["admin", "technician", "customer"].includes(userRole)) {
+            alert("You are not authorized to view this page");
+            window.location.href = "index.html";
+            return;
+          }
+
           await loadIncidents();
           setupEventListeners();
         } catch (error) {
@@ -234,23 +255,44 @@
         }
       });
 
-      // Set up event listeners
       function setupEventListeners() {
         applyFilters.addEventListener("click", applyFiltersHandler);
         resetFilters.addEventListener("click", resetFiltersHandler);
         closeDetailsBtn.addEventListener("click", closeDetailsHandler);
       }
 
-      // Load incidents from API
       async function loadIncidents() {
         try {
-          const response = await fetch(INCIDENTS_API);
+          const response = await fetch(INCIDENTS_API, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!response.ok) {
-            throw new Error("Failed to fetch incidents");
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch incidents");
           }
 
           const result = await response.json();
           allIncidents = result.data || [];
+
+          if (userRole === "customer") {
+            allIncidents = allIncidents.filter(
+              (incident) => incident.customerid == userId
+            );
+          } else if (userRole === "technician") {
+            allIncidents = allIncidents.filter(
+              (incident) =>
+                incident.technicianid == userId || !incident.technicianid
+            );
+          }
+
           renderIncidents(allIncidents);
         } catch (error) {
           console.error("Error loading incidents:", error);
@@ -258,7 +300,6 @@
         }
       }
 
-      // Render incidents in the table
       function renderIncidents(incidents) {
         incidentsTable.innerHTML = "";
 
@@ -266,7 +307,10 @@
           const row = incidentsTable.insertRow();
           const cell = row.insertCell(0);
           cell.colSpan = 7;
-          cell.textContent = "No incidents found matching your criteria";
+          cell.textContent =
+            userRole === "customer"
+              ? "No incidents found for your account"
+              : "No incidents found matching your criteria";
           cell.style.textAlign = "center";
           return;
         }
@@ -274,47 +318,45 @@
         incidents.forEach((incident) => {
           const row = incidentsTable.insertRow();
 
-          // ID
           row.insertCell(0).textContent = incident.incidentid;
 
-          // Customer
           row.insertCell(1).textContent = incident.customername || "N/A";
 
-          // Product
           row.insertCell(2).textContent = incident.productname || "N/A";
 
-          // Date Opened
           const dateOpenedCell = row.insertCell(3);
           dateOpenedCell.textContent = formatDate(incident.dateopened);
 
-          // Date Closed
-          const dateClosedCell = row.insertCell(4);
-          dateClosedCell.textContent = formatDate(incident.dateclosed);
+          const techCell = row.insertCell(4);
+          techCell.textContent = incident.technicianname || "Unassigned";
 
-          // Status
-          //   const statusCell = row.insertCell(5);
-          //   statusCell.textContent = getStatusText(incident);
-
-          // Technician
-          row.insertCell(5).textContent =
-            incident.technicianname || "Unassigned";
-
-          // Action
-          const actionCell = row.insertCell(6);
+          const actionCell = row.insertCell(5);
           const viewBtn = document.createElement("button");
           viewBtn.className = "btn btn-primary";
           viewBtn.textContent = "View";
           viewBtn.addEventListener("click", () =>
             viewIncidentDetails(incident)
           );
-          actionCell.appendChild(viewBtn);
+
+          if (
+            userRole === "admin" ||
+            (userRole === "technician" && incident.technicianid == userId)
+          ) {
+            const updateBtn = document.createElement("button");
+            updateBtn.className = "btn btn-secondary";
+            updateBtn.textContent = "Update";
+            updateBtn.style.marginLeft = "5px";
+            updateBtn.addEventListener("click", () => updateIncident(incident));
+            actionCell.appendChild(viewBtn);
+            actionCell.appendChild(updateBtn);
+          } else {
+            actionCell.appendChild(viewBtn);
+          }
         });
       }
 
-      // Apply filters handler
       function applyFiltersHandler() {
         const filteredIncidents = allIncidents.filter((incident) => {
-          // Status filter
           const statusFilterValue = statusFilter.value;
           if (statusFilterValue === "unassigned" && incident.technicianid)
             return false;
@@ -368,7 +410,6 @@
         renderIncidents(filteredIncidents);
       }
 
-      // Reset filters handler
       function resetFiltersHandler() {
         statusFilter.value = "all";
         dateFrom.value = "";
@@ -377,11 +418,9 @@
         renderIncidents(allIncidents);
       }
 
-      // View incident details
       function viewIncidentDetails(incident) {
         selectedIncident = incident;
 
-        // Update details
         detailId.textContent = incident.incidentid;
         detailCustomer.textContent = incident.customername || "N/A";
         detailProduct.textContent = incident.productname
@@ -392,22 +431,24 @@
           formatDate(incident.dateclosed) || "Not closed";
         detailTitle.textContent = incident.title;
         detailTechnician.textContent = incident.technicianname || "Unassigned";
-        // detailStatus.textContent = getStatusText(incident);
         detailDescription.textContent =
           incident.description || "No description provided";
 
-        // Show details panel
         detailsPanel.classList.remove("hidden");
         detailsPanel.scrollIntoView({ behavior: "smooth" });
       }
 
-      // Close details handler
+      function updateIncident(incident) {
+        alert(
+          `Update functionality for incident #${incident.incidentid} would go here`
+        );
+      }
+
       function closeDetailsHandler() {
         detailsPanel.classList.add("hidden");
         selectedIncident = null;
       }
 
-      // Helper function to format date
       function formatDate(dateString) {
         if (!dateString) return "N/A";
         try {
@@ -419,13 +460,6 @@
           console.error("Date formatting error:", e);
           return "Invalid Date";
         }
-      }
-
-      // Helper function to get status text
-      function getStatusText(incident) {
-        if (incident.dateclosed) return "Closed";
-        if (incident.technicianid) return "Assigned";
-        return "Unassigned";
       }
     </script>
   </body>

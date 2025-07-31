@@ -112,7 +112,6 @@
     </footer>
 
     <script>
-      // DOM Elements
       const incidentsTable = document
         .getElementById("incidentsTable")
         .getElementsByTagName("tbody")[0];
@@ -123,7 +122,6 @@
       const successPanel = document.getElementById("successPanel");
       const successMessage = document.getElementById("successMessage");
 
-      // Incident details elements
       const incidentIdEl = document.getElementById("incidentId");
       const customerNameEl = document.getElementById("customerName");
       const productNameEl = document.getElementById("productName");
@@ -133,16 +131,40 @@
         "incidentDescription"
       );
 
-      // API Endpoints
       const INCIDENTS_API = "http://localhost:8000/api/incident";
       const TECHNICIANS_API = "http://localhost:8000/api/technicians";
 
-      // Current selected incident
       let selectedIncident = null;
 
-      // Load data when page loads
+      const token = localStorage.getItem("token");
+      const userRole = localStorage.getItem("userRole");
+
+      const authHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      if (!token) {
+        alert("You are not authenticated. Please login first.");
+        window.location.href = "login.html";
+      }
+
+      function handleUnauthorized() {
+        alert("Your session has expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+      }
+
       document.addEventListener("DOMContentLoaded", async () => {
         try {
+          if (userRole !== "customer") {
+            alert("Only customers can assign incidents");
+            window.location.href = "index.html";
+            return;
+          }
+
           await Promise.all([loadUnassignedIncidents(), loadTechnicians()]);
         } catch (error) {
           console.error("Error loading initial data:", error);
@@ -150,20 +172,28 @@
         }
       });
 
-      // Load unassigned incidents from API
       async function loadUnassignedIncidents() {
         try {
-          const response = await fetch(INCIDENTS_API);
+          const response = await fetch(INCIDENTS_API, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!response.ok) {
-            throw new Error("Failed to fetch incidents");
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch incidents");
           }
 
           const result = await response.json();
-          console.log(result);
           const unassignedIncidents = result.data.filter(
             (incident) => !incident.technicianname
           );
-          console.log(unassignedIncidents);
           renderIncidents(unassignedIncidents);
         } catch (error) {
           console.error("Error loading incidents:", error);
@@ -171,9 +201,8 @@
         }
       }
 
-      // Render incidents in the table
       function renderIncidents(incidents) {
-        incidentsTable.innerHTML = ""; // Clear existing rows
+        incidentsTable.innerHTML = "";
 
         if (incidents.length === 0) {
           const row = incidentsTable.insertRow();
@@ -185,35 +214,54 @@
         }
 
         incidents.forEach((incident) => {
-          const row = incidentsTable.insertRow();
+          if (incident.customerid == localStorage.getItem("userId")) {
+            const row = incidentsTable.insertRow();
 
-          row.insertCell(0).textContent = incident.incidentid;
-          row.insertCell(1).textContent = incident.customername;
-          row.insertCell(2).textContent = incident.productname;
-          row.insertCell(3).textContent = new Date(incident.dateopened)
-            .toISOString()
-            .split("T")[0];
-          row.insertCell(4).textContent = incident.title;
+            row.insertCell(0).textContent = incident.incidentid;
+            row.insertCell(1).textContent = incident.customername;
+            row.insertCell(2).textContent = incident.productname;
+            row.insertCell(3).textContent = new Date(incident.dateopened)
+              .toISOString()
+              .split("T")[0];
+            row.insertCell(4).textContent = incident.title;
 
-          const actionCell = row.insertCell(5);
-          const selectBtn = document.createElement("button");
-          selectBtn.className = "btn btn-primary";
-          selectBtn.textContent = "Select";
-          selectBtn.addEventListener("click", () => selectIncident(incident));
-          actionCell.appendChild(selectBtn);
+            const actionCell = row.insertCell(5);
+            const selectBtn = document.createElement("button");
+            selectBtn.className = "btn btn-primary";
+            selectBtn.textContent = "Select";
+            selectBtn.addEventListener("click", () => selectIncident(incident));
+            actionCell.appendChild(selectBtn);
+          }
         });
+
+        if (incidentsTable.rows.length === 0) {
+          const row = incidentsTable.insertRow();
+          const cell = row.insertCell(0);
+          cell.colSpan = 6;
+          cell.textContent = "No unassigned incidents found for your account";
+          cell.style.textAlign = "center";
+        }
       }
 
-      // Load technicians from API
       async function loadTechnicians() {
         try {
-          const response = await fetch(TECHNICIANS_API);
+          const response = await fetch(TECHNICIANS_API, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!response.ok) {
-            throw new Error("Failed to fetch technicians");
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch technicians");
           }
 
           const result = await response.json();
-          console.log(result);
           renderTechnicians(result);
         } catch (error) {
           console.error("Error loading technicians:", error);
@@ -221,7 +269,6 @@
         }
       }
 
-      // Render technicians in dropdown
       function renderTechnicians(technicians) {
         technicianSelect.innerHTML =
           '<option value="">-- Select a Technician --</option>';
@@ -234,11 +281,9 @@
         });
       }
 
-      // Select incident handler
       function selectIncident(incident) {
         selectedIncident = incident;
 
-        // Update incident details
         incidentIdEl.textContent = incident.incidentid;
         customerNameEl.textContent = incident.customername;
         productNameEl.textContent = `${incident.productname} (${incident.productcode})`;
@@ -249,14 +294,11 @@
         incidentDescriptionEl.textContent =
           incident.description || "No description provided";
 
-        // Show assignment panel
         assignmentPanel.classList.remove("hidden");
 
-        // Scroll to assignment panel
         assignmentPanel.scrollIntoView({ behavior: "smooth" });
       }
 
-      // Assign incident handler
       assignBtn.addEventListener("click", async () => {
         if (!selectedIncident) return;
 
@@ -271,12 +313,15 @@
             `${INCIDENTS_API}/${selectedIncident.incidentid}/assign`,
             {
               method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: authHeaders,
               body: JSON.stringify({ techID }),
             }
           );
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
 
           const result = await response.json();
 
@@ -284,21 +329,16 @@
             throw new Error(result.message || "Failed to assign technician");
           }
 
-          // Show success message
-          successMessage.textContent = `Incident #${selectedIncident.incidentID} successfully assigned to technician.`;
+          successMessage.textContent = `Incident #${selectedIncident.incidentid} successfully assigned to technician.`;
           successPanel.classList.remove("hidden");
 
-          // Hide assignment panel
           assignmentPanel.classList.add("hidden");
 
-          // Reset selection
           selectedIncident = null;
           technicianSelect.value = "";
 
-          // Reload incidents
           await loadUnassignedIncidents();
 
-          // Scroll to success message
           successPanel.scrollIntoView({ behavior: "smooth" });
         } catch (error) {
           console.error("Error assigning technician:", error);
@@ -306,7 +346,6 @@
         }
       });
 
-      // Cancel button handler
       cancelBtn.addEventListener("click", () => {
         assignmentPanel.classList.add("hidden");
         selectedIncident = null;

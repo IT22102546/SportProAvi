@@ -97,7 +97,6 @@
     </footer>
 
     <script>
-      // DOM Elements
       const techniciansTable = document
         .getElementById("techniciansTable")
         .getElementsByTagName("tbody")[0];
@@ -106,15 +105,30 @@
       const searchBtn = document.getElementById("searchBtn");
       const clearSearchBtn = document.getElementById("clearSearchBtn");
 
-      // Base API URL
       const API_BASE_URL = "http://localhost:8000/api/technicians";
 
-      // Load technicians when page loads
+      const token = localStorage.getItem("token");
+      const userRole = localStorage.getItem("userRole");
+
+      if (!token) {
+        alert("You are not authenticated. Please login first.");
+        window.location.href = "login.html";
+      }
+
+      const authHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
       document.addEventListener("DOMContentLoaded", loadTechnicians);
 
-      // Form submission handler
       addTechnicianForm.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        if (userRole !== "admin") {
+          alert("Only administrators can add technicians");
+          return;
+        }
 
         const formData = {
           firstName: addTechnicianForm.firstName.value.trim(),
@@ -127,19 +141,20 @@
         try {
           const response = await fetch(API_BASE_URL, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: authHeaders,
             body: JSON.stringify(formData),
           });
 
-          const result = await response.json();
-
-          if (!response.ok) {
-            throw new Error(result.message || "Failed to add technician");
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
           }
 
-          // Clear form and refresh table
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to add technician");
+          }
+
           addTechnicianForm.reset();
           loadTechnicians();
 
@@ -150,8 +165,7 @@
         }
       });
 
-      // Search handler
-      searchBtn.addEventListener("click", () => {
+      searchBtn?.addEventListener("click", () => {
         const query = searchInput.value.trim();
         if (query.length >= 2) {
           searchTechnicians(query);
@@ -160,55 +174,70 @@
         }
       });
 
-      // Clear search handler
-      clearSearchBtn.addEventListener("click", () => {
+      clearSearchBtn?.addEventListener("click", () => {
         searchInput.value = "";
         loadTechnicians();
       });
 
-      // Load technicians from API
       async function loadTechnicians() {
         try {
-          const response = await fetch(API_BASE_URL);
+          const response = await fetch(API_BASE_URL, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!response.ok) {
-            throw new Error("Failed to fetch technicians");
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch technicians");
           }
 
           const result = await response.json();
-          console.log(result);
           renderTechnicians(result);
         } catch (error) {
           console.error("Error loading technicians:", error);
-          alert("Error loading technicians. Please try again.");
+          alert(`Error loading technicians: ${error.message}`);
         }
       }
 
-      // Search technicians
       async function searchTechnicians(query) {
         try {
           const response = await fetch(
-            `${API_BASE_URL}/search?query=${encodeURIComponent(query)}`
+            `${API_BASE_URL}/search?query=${encodeURIComponent(query)}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
           );
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!response.ok) {
-            throw new Error("Failed to search technicians");
+            const errorData = await response.json();
+            throw new Error(
+              errorData.message || "Failed to search technicians"
+            );
           }
 
           const result = await response.json();
-          if (result.success) {
-            renderTechnicians(result.data);
-          } else {
-            throw new Error(result.message);
-          }
+          renderTechnicians(result);
         } catch (error) {
           console.error("Error searching technicians:", error);
           alert(`Error searching technicians: ${error.message}`);
         }
       }
 
-      // Render technicians in the table
       function renderTechnicians(technicians) {
-        techniciansTable.innerHTML = ""; // Clear existing rows
-
+        techniciansTable.innerHTML = "";
         if (technicians.length === 0) {
           const row = techniciansTable.insertRow();
           const cell = row.insertCell(0);
@@ -227,24 +256,36 @@
           row.insertCell(3).textContent = tech.phone;
 
           const actionCell = row.insertCell(4);
-          const deleteBtn = document.createElement("button");
-          deleteBtn.className = "btn btn-danger";
-          deleteBtn.textContent = "Delete";
-          deleteBtn.addEventListener("click", () => confirmDelete(tech.techid));
-          actionCell.appendChild(deleteBtn);
+
+          // Only show delete button for admins
+          if (userRole === "admin") {
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "btn btn-danger";
+            deleteBtn.textContent = "Delete";
+            deleteBtn.addEventListener("click", () =>
+              confirmDelete(tech.techid)
+            );
+            actionCell.appendChild(deleteBtn);
+          } else {
+            actionCell.textContent = "View Only";
+          }
         });
       }
 
-      // Confirm and delete technician
       async function confirmDelete(techID) {
         if (confirm("Are you sure you want to delete this technician?")) {
           try {
             const response = await fetch(`${API_BASE_URL}/${techID}`, {
               method: "DELETE",
+              headers: authHeaders,
             });
 
+            if (response.status === 401) {
+              handleUnauthorized();
+              return;
+            }
+
             if (response.status === 204) {
-              // Refresh the table
               loadTechnicians();
               alert("Technician deleted successfully!");
             } else if (response.status === 400) {
@@ -260,6 +301,14 @@
             alert(`Error deleting technician: ${error.message}`);
           }
         }
+      }
+
+      function handleUnauthorized() {
+        alert("Your session has expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
       }
     </script>
   </body>
